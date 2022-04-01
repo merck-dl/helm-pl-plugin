@@ -1,4 +1,4 @@
-async function processFlags(){
+async function processFlagsAsync(){
     const argv = require('minimist')(process.argv)
 
     if (argv.h || argv.help){
@@ -38,8 +38,17 @@ async function dlFilesAndWriteJsonFile(inputValuesYamlFile, outputJsonFile){
     fs.writeFileSync(outputJsonFile,JSON.stringify(jsonData));
 }
 
-processFlags().then(
-    () => {},
-    (err) => {console.log(err);}
-);
+function processFlags() {
+    processFlagsAsync().then(
+        () => {
+        },
+        (err) => {
+            console.log(err);
+        }
+    );
+}
 
+
+module.exports = {
+    processFlags
+}
