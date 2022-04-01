@@ -14,6 +14,7 @@ function processFlags(){
         return require('./eth-adapter/bin/lib/src/eth-adapter').processFlags();
     }
 
+    console.log(argv);
     return showHelp();
 }
 
