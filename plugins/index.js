@@ -24,8 +24,8 @@ function showHelp(){
         'Usage:\n' +
         'helm plugin-name [command] [flags]\n\n' +
         'Plugin commands:\n' +
-        '-newNetwork   generate crypto for the initial node and genesis information\n'+
-        '-ethAdapter   Demo code for aggregation\n\n');
+        '--newNetwork   generate crypto for the initial node and genesis information\n'+
+        '--ethAdapter   Demo code for aggregation\n\n');
 }
 
 

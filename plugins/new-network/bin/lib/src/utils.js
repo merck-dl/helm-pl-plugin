@@ -62,14 +62,11 @@ function createAdmAcc(){
 }
 
 function showHelp(){
-    return console.log('\n\nnode-crypto-gen plugin for helm. Generates cryptographic information for the Quorum Blockchain Node\n\n' +
-        'Usage:\n' +
-        'helm node-crypto-gen -i <input> -o <output> [command flag]\n\n' +
-        'Plugin flag and commands:\n' +
-        '-i           <input values.yaml file path>\n' +
-        '-o           <output values.yaml.file path>\n' +
-        '-genesis     generate crypto for the initial node : genesis and node validator information\n' +
-        '-node-crypto generate node validator information\n\n');
+    return console.log('\n\nPharmaLedger plugin for helm.\n\n' +
+        'Usage : helm plugin-name --newNetwork --i=<input> --o=<output> \n\n'+
+        '--newNetwork command flags:\n\n' +
+        '--i=<input values.yaml file path>\n' +
+        '--o=<output values.yaml.file path>\n\n');
 }
 
 
