@@ -7,40 +7,66 @@ function processFlags(){
         return require('./utils').showHelp();
     }
     if (!argv.i){
-        console.log('Input values.yaml file not provided.\n\n');
+        console.log('Error: Input values.yaml file not provided.\n\n');
         return require('./utils').showHelp();
     }
 
     if (!argv.o){
-        console.log('Output values.yaml file not provided.\n\n');
+        console.log('Error: Output location not provided.\n\n');
         return require('./utils').showHelp();
     }
 
-    return generateNodeCrypto(argv.i,argv.o);
+    generateNodeCrypto(argv.i,argv.o).then(
+        () => {},
+        (err) => {console.log(err)}
+
+    );
 }
 
 
-function generateNodeCrypto(inputValuesFile, outputValueFiles){
+
+
+async function generateNodeCrypto(inputValuesYamlFile, outputPath){
     const path = require('path');
-    const inputValuesPath = path.resolve(inputValuesFile);
-    const outputValuesPath = path.resolve(outputValueFiles);
+    const utils = require('./utils');
+
+    const inputValuesPath = path.resolve(inputValuesYamlFile);
 
     const yaml = require('yaml');
     const fs = require('fs');
     const inputYamlFile = fs.readFileSync(inputValuesPath).toString('utf8');
     const parsedInputFile = yaml.parse(inputYamlFile);
-    const utils = require('./utils');
+
+    //configured use case validation
+    if (!parsedInputFile.use_case.joinNetwork.enabled){
+        return console.log('Error: values.yaml file has not enabled the joinNetwork use case. Please review the input values.yaml configuration and execute the correct plugin for the configured use case !');
+    }
+
+    const genesisUrl = parsedInputFile.use_case.joinNetwork.genesis_file_location;
+
+    const generatedInfoFile = path.resolve(outputPath,'join-network.plugin.json');
+    const generatedSecretInfoFile = path.resolve(outputPath,'join-network.plugin.secrets.json');
+    const publicJson = {};
+    const secretJson = {};
+
     const node = utils.generateValidator();
 
+    publicJson.enode = node.enode;
+    publicJson.nodeAddress = node.nodeAddress;
+    publicJson.genesis = await utils.dlFile(genesisUrl);
 
+    secretJson.nodeKey = node.nodekey;
 
-    parsedInputFile.quorum.enode = node.enode;
-    parsedInputFile.quorum.nodeKey = node.nodekey;
-    parsedInputFile.quorum.nodeAdress = node.nodeAddress;
+    fs.writeFileSync(generatedInfoFile,JSON.stringify(publicJson));
+    fs.writeFileSync(generatedSecretInfoFile,JSON.stringify(secretJson));
 
-    const out = yaml.stringify(parsedInputFile);
-    fs.writeFileSync(outputValuesPath,out);
+    console.log('Generated information file for joinNetwork use case : ', generatedInfoFile);
+    console.log('Generated secret information file for joinNetwork use case : ', generatedSecretInfoFile);
 }
 
 
-processFlags();
+
+
+module.exports = {
+    processFlags
+}

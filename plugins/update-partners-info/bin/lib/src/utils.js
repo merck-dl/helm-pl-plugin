@@ -12,8 +12,8 @@ function generateValidator(){
 
 function showHelp(){
     return console.log('\n\nPharmaLedger plugin for helm.\n\n' +
-        'Usage : helm plugin-name --joinNetwork -i <input> -o <output> \n\n'+
-        '--joinNetwork command flags:\n\n' +
+        'Usage : helm plugin-name --updatePartnersInfo -i <input> -o <output> \n\n'+
+        '--updatePartnersInfo command flags:\n\n' +
         '-i <values.yaml file path>\n' +
         '-o <output path where to store the generated json files>\n\n');
 }

@@ -63,10 +63,10 @@ function createAdmAcc(){
 
 function showHelp(){
     return console.log('\n\nPharmaLedger plugin for helm.\n\n' +
-        'Usage : helm plugin-name --newNetwork --i=<input> --o=<output> \n\n'+
+        'Usage : helm plugin-name --newNetwork -i <input> -o <output> \n\n'+
         '--newNetwork command flags:\n\n' +
-        '--i=<input values.yaml file path>\n' +
-        '--o=<output values.yaml.file path>\n\n');
+        '-i <values.yaml file path>\n' +
+        '-o <output path where to store the generated json files>\n\n');
 }
 
 
