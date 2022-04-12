@@ -56,12 +56,12 @@ async function aggregatePartnersInfo(inputValuesYamlFile, outputPath){
         const nodeaddressurl = rawshared+'/'+peer+'/'+'validator.address';
         console.log('Reading: ',nodeaddressurl);
         nodeInfo.nodeAddress = (await utils.dlFile(nodeaddressurl)).toString().trim();
-        const enodeIpUrl = rawshared+'/'+peer+'/'+'enode.ip';
-        console.log('Reading: ',enodeIpUrl);
-        nodeInfo.enodeip = (await utils.dlFile(enodeIpUrl)).toString().trim();
-        const enodeIpPortUrl = rawshared+'/'+peer+'/'+'enode.ip.port';
-        console.log('Reading: ',enodeIpPortUrl);
-        nodeInfo.enodeipport = (await utils.dlFile(enodeIpPortUrl)).toString().trim();
+        const enodeAddressUrl = rawshared+'/'+peer+'/'+'enode.address';
+        console.log('Reading: ',enodeAddressUrl);
+        nodeInfo.enodeAddress = (await utils.dlFile(enodeAddressUrl)).toString().trim();
+        const enodeAddressPortUrl = rawshared+'/'+peer+'/'+'enode.address.port';
+        console.log('Reading: ',enodeAddressPortUrl);
+        nodeInfo.enodeAddressPort = (await utils.dlFile(enodeAddressPortUrl)).toString().trim();
 
         publicJson.peers.push(nodeInfo);
     }
