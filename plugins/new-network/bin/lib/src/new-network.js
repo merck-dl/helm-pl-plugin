@@ -25,10 +25,10 @@ function generateInitialNodeCrypto(inputValuesYamlFile, outputPath){
     const path = require('path');
     const inputValuesPath = path.resolve(inputValuesYamlFile);
 
-    const yaml = require('yaml');
+    const yaml = require('js-yaml');
     const fs = require('fs');
     const inputYamlFile = fs.readFileSync(inputValuesPath).toString('utf8');
-    const parsedInputFile = yaml.parse(inputYamlFile);
+    const parsedInputFile = yaml.load(inputYamlFile);
     //configured use case validation
     if (!parsedInputFile.use_case.newNetwork.enabled){
         return console.log('Error : values.yaml file has not enabled the newNetwork use case. Please review the input values.yaml configuration and execute the correct plugin for the configured use case !');

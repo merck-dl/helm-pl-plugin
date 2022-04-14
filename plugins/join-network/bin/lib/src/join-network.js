@@ -32,10 +32,10 @@ async function generateNodeCrypto(inputValuesYamlFile, outputPath){
 
     const inputValuesPath = path.resolve(inputValuesYamlFile);
 
-    const yaml = require('yaml');
+    const yaml = require('js-yaml');
     const fs = require('fs');
     const inputYamlFile = fs.readFileSync(inputValuesPath).toString('utf8');
-    const parsedInputFile = yaml.parse(inputYamlFile);
+    const parsedInputFile = yaml.load(inputYamlFile);
 
     //configured use case validation
     if (!parsedInputFile.use_case.joinNetwork.enabled){
