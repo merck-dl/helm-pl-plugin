@@ -48,7 +48,7 @@ async function aggregatePartnersInfo(inputValuesYamlFile, outputPath){
     const rawshared = parsedInputFile.use_case.updatePartnersInfo.shared_data_location;
     const peers = parsedInputFile.use_case.updatePartnersInfo.peers;
     for (let i = 0; i < peers.length ; i++) {
-        const peer = peers[0];
+        const peer = peers[i];
         const enodeurl = rawshared+'/'+peer+'/'+'enode';
         console.log('Reading : ',enodeurl);
         const nodeInfo = {};
