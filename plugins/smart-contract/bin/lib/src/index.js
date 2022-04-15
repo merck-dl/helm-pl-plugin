@@ -22,7 +22,7 @@ function processFlags() {
 }
 
 const downloadSmartContracts = require("./downloadSmartContracts").downloadAndStoreSmartContracts;
-function getConfig(inputPath, outputPath) {
+function getConfig(inputPath) {
     const path = require('path');
     const inputValuesPath = path.resolve(inputPath);
 
@@ -30,15 +30,11 @@ function getConfig(inputPath, outputPath) {
     const fs = require('fs');
     const inputYamlFile = fs.readFileSync(inputValuesPath).toString('utf8');
     const parsedInputFile = yaml.parse(inputYamlFile);
-    for(let pth in parsedInputFile.paths){
-        parsedInputFile.paths[pth] = path.resolve(parsedInputFile.paths[pth]);
-    }
-    const config = {
-        outputPath: path.resolve(outputPath),
-        ...parsedInputFile
+    for (let pth in parsedInputFile.paths) {
+        parsedInputFile.paths[pth] = path.join(__dirname, parsedInputFile.paths[pth]);
     }
 
-    return config;
+    return parsedInputFile;
 }
 
 function deploySmartContracts(inputPath, outputPath) {

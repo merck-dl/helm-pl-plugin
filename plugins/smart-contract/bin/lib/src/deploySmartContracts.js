@@ -1,25 +1,7 @@
 const constants = require("./constants");
 const path = require("path");
 const fs = require("fs");
-const {portForward} = require("./portForward");
-
-function getAccountInfo(smartContractInfoDirectoryPath) {
-    let publicInfo;
-    let secrets;
-    let orgAcc;
-    try {
-        publicInfo = JSON.parse(fs.readFileSync(path.join(smartContractInfoDirectoryPath, constants.PATHS.SMART_CONTRACT_INFO), "utf-8"));
-        secrets = JSON.parse(fs.readFileSync(path.join(smartContractInfoDirectoryPath, constants.PATHS.SMART_CONTRACT_SECRETS), "utf-8"));
-        orgAcc = {
-            address: publicInfo.userAddress,
-            privateKey: secrets.privateKey
-        }
-    } catch (e) {
-        const createOrgAccount = require("./createOrgAcc").createOrgAcc;
-        orgAcc = createOrgAccount();
-    }
-    return orgAcc;
-}
+const {createOrgAcc: createOrgAccount} = require("./createOrgAcc");
 
 function deploySmartContract(web3, accountInfo, contractInfo, contractName, contractArgs, callback) {
     let abi = contractInfo.abi;
@@ -127,37 +109,34 @@ function waitForTransactionToFinish(web3, hash, callback) {
 
     receipt();
 }
+function storeSmartContractsInfo(publicInfo, secrets, config) {
+    const childProcess = require("child_process");
+    childProcess.execSync(`cd ${path.join(__dirname, constants.PATHS.SHARED_REPO_CLONE_PATH)}`);
+    childProcess.execSync(`git clone ${config.shared_repository} ${constants.PATHS.SHARED_REPO_NAME}`);
+    childProcess.execSync(`cd ${path.join(constants.PATHS.SHARED_REPO_NAME, constants.PATHS.SHARED_SMART_CONTRACT_DATA_FOLDER)}`);
+    childProcess.execSync(`git remote set-url origin ${config.shared_repository}`);
 
-function storeSmartContractsInfo(publicInfo, secrets, outputPath) {
-    const publicInfoPath = path.join(outputPath, constants.PATHS.SMART_CONTRACT_INFO);
-    const secretsPath = path.join(outputPath, constants.PATHS.SMART_CONTRACT_SECRETS);
-    try {
-        fs.accessSync(outputPath);
-    } catch (e) {
-        fs.mkdirSync(outputPath);
-    }
-
-    console.log(publicInfoPath)
-    console.log(secretsPath)
-    fs.writeFileSync(publicInfoPath, JSON.stringify(publicInfo));
-    fs.writeFileSync(secretsPath, JSON.stringify(secrets));
-
-    console.log("Smart contract info was store successfully");
+    fs.writeFileSync(path.join(__dirname, constants.PATHS.SHARED_REPO_NAME,constants.PATHS.SHARED_SMART_CONTRACT_DATA_FOLDER, constants.PATHS.SMART_CONTRACT_INFO), JSON.stringify(publicInfo));
+    fs.writeFileSync(path.join(__dirname, constants.PATHS.SHARED_REPO_NAME,constants.PATHS.SHARED_SMART_CONTRACT_DATA_FOLDER, constants.PATHS.SMART_CONTRACT_SECRETS), JSON.stringify(secrets));
+    childProcess.execSync(`git add .`);
+    childProcess.execSync(`git commit -m "${constants.COMMIT_MESSAGE}"`);
+    childProcess.execSync(`git push origin master`);
+    console.log("Smart contract info was stored successfully");
 }
+
 
 function deploySmartContracts(accountInfo, config, callback) {
     const portForward = require("./portForward").portForward;
-    const cp = portForward();
     const fs = require('fs');
     const files = fs.readdirSync(config.paths.smart_contracts);
     const contracts = files.filter(file => file.endsWith(".sol"));
     const Web3 = require('web3');
     const web3 = new Web3('http://127.0.0.1:8545'); // your geth
     const contractsInfo = compileSmartContracts(config, contracts);
-    const __deploySmartContractsSequentially = (index) => {
+    const __deploySmartContractsSequentially = (index, childProcess) => {
         const contract = contracts[index];
         if (typeof contract === "undefined") {
-            cp.kill();
+            process.kill(-childProcess.pid);
             return callback(undefined, contractsInfo);
         }
 
@@ -168,17 +147,20 @@ function deploySmartContracts(accountInfo, config, callback) {
             }
 
             contractsInfo[contract].address = scAddress;
-            __deploySmartContractsSequentially(index + 1);
+            __deploySmartContractsSequentially(index + 1, childProcess);
         })
     }
 
-    setTimeout(() => {
-        __deploySmartContractsSequentially(0);
-    }, 1000)
+    portForward(config, (err, childProcess) => {
+        if (err) {
+            return callback(err);
+        }
+        __deploySmartContractsSequentially(0, childProcess);
+    })
 }
 
 function deploySmartContractsAndStoreInfo(config) {
-    const accountInfo = getAccountInfo(config.outputPath);
+    const accountInfo = createOrgAccount();
     const secrets = {privateKey: accountInfo.privateKey};
     const publicInfo = {userAddress: accountInfo.address};
     deploySmartContracts(accountInfo, config, (err, contractsInfo) => {
@@ -189,7 +171,7 @@ function deploySmartContractsAndStoreInfo(config) {
 
         publicInfo.contracts = contractsInfo;
         console.log("Smart contracts were deployed");
-        storeSmartContractsInfo(publicInfo, secrets, config.outputPath);
+        storeSmartContractsInfo(publicInfo, secrets, config);
         process.exit(0);
     })
 }
