@@ -1,7 +1,3 @@
-const path = require("path");
-const fs = require("fs");
-const yaml = require("yaml");
-
 function processFlags() {
     const argv = require('minimist')(process.argv)
 
@@ -13,12 +9,7 @@ function processFlags() {
         return require('./utils').showHelp();
     }
 
-    if (!argv.o) {
-        console.log('Error: Output location not provided.\n\n');
-        return require('./utils').showHelp();
-    }
-
-    deploySmartContracts(argv.i, argv.o);
+    deploySmartContracts(argv.i);
 }
 
 const downloadSmartContracts = require("./downloadSmartContracts").downloadAndStoreSmartContracts;
@@ -26,10 +17,10 @@ function getConfig(inputPath) {
     const path = require('path');
     const inputValuesPath = path.resolve(inputPath);
 
-    const yaml = require('yaml');
+    const yaml = require('js-yaml');
     const fs = require('fs');
     const inputYamlFile = fs.readFileSync(inputValuesPath).toString('utf8');
-    const parsedInputFile = yaml.parse(inputYamlFile);
+    const parsedInputFile = yaml.load(inputYamlFile);
     for (let pth in parsedInputFile.paths) {
         parsedInputFile.paths[pth] = path.join(__dirname, parsedInputFile.paths[pth]);
     }

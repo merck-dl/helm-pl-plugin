@@ -109,21 +109,32 @@ function waitForTransactionToFinish(web3, hash, callback) {
 
     receipt();
 }
+
 function storeSmartContractsInfo(publicInfo, secrets, config) {
     const childProcess = require("child_process");
-    childProcess.execSync(`cd ${path.join(__dirname, constants.PATHS.SHARED_REPO_CLONE_PATH)}`);
-    childProcess.execSync(`git clone ${config.shared_repository} ${constants.PATHS.SHARED_REPO_NAME}`);
-    childProcess.execSync(`cd ${path.join(constants.PATHS.SHARED_REPO_NAME, constants.PATHS.SHARED_SMART_CONTRACT_DATA_FOLDER)}`);
-    childProcess.execSync(`git remote set-url origin ${config.shared_repository}`);
+    const tmpDir = path.join(require("os").tmpdir(), require("crypto").randomBytes(3).toString("hex"));
+    childProcess.execSync(`git clone ${config.shared_repository} ${path.join(tmpDir, constants.PATHS.SHARED_REPO_NAME)}`);
 
-    fs.writeFileSync(path.join(__dirname, constants.PATHS.SHARED_REPO_NAME,constants.PATHS.SHARED_SMART_CONTRACT_DATA_FOLDER, constants.PATHS.SMART_CONTRACT_INFO), JSON.stringify(publicInfo));
-    fs.writeFileSync(path.join(__dirname, constants.PATHS.SHARED_REPO_NAME,constants.PATHS.SHARED_SMART_CONTRACT_DATA_FOLDER, constants.PATHS.SMART_CONTRACT_SECRETS), JSON.stringify(secrets));
-    childProcess.execSync(`git add .`);
-    childProcess.execSync(`git commit -m "${constants.COMMIT_MESSAGE}"`);
-    childProcess.execSync(`git push origin master`);
+    const sharedRepoPath = path.join(tmpDir, constants.PATHS.SHARED_REPO_NAME, constants.PATHS.SHARED_SMART_CONTRACT_DATA_FOLDER);
+
+    fs.writeFileSync(path.join(sharedRepoPath, constants.PATHS.SMART_CONTRACT_INFO), JSON.stringify(publicInfo));
+    fs.writeFileSync(path.join(sharedRepoPath, constants.PATHS.SMART_CONTRACT_SECRETS), JSON.stringify(secrets));
+
+    childProcess.execSync(`cd ${sharedRepoPath} && git config user.name ${config.git_username}`);
+    childProcess.execSync(`cd ${sharedRepoPath} && git config user.email ${config.git_email}`);
+
+    let remotes = childProcess.execSync(`cd ${sharedRepoPath} && git remote -v`);
+
+    if (remotes.length === 0) {
+        childProcess.execSync(`cd ${sharedRepoPath} && git remote add origin ${config.shared_repository}`);
+    }
+
+    childProcess.execSync(`cd ${sharedRepoPath} && git add .`);
+    childProcess.execSync(`cd ${sharedRepoPath} && git commit -m "${constants.COMMIT_MESSAGE}"`);
+    childProcess.execSync(`cd ${sharedRepoPath} && git push origin master`);
+    fs.rmSync(tmpDir, {recursive: true})
     console.log("Smart contract info was stored successfully");
 }
-
 
 function deploySmartContracts(accountInfo, config, callback) {
     const portForward = require("./portForward").portForward;
