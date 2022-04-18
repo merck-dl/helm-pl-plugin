@@ -5,23 +5,23 @@ function processFlags(){
         return showHelp();
     }
     if (argv.newNetwork){
-        return require('./new-network/bin/lib/src/new-network').processFlags();
+        return require('./new-network/new-network').processFlags();
     }
 
     if (argv.joinNetwork){
-        return require('./join-network/bin/lib/src/join-network').processFlags();
+        return require('./join-network/join-network').processFlags();
     }
 
     if (argv.updatePartnersInfo){
-        return require('./update-partners-info/bin/lib/src/update-partners-info').processFlags();
+        return require('./update-partners-info/update-partners-info').processFlags();
     }
 
     if (argv.ethAdapter){
-        return require('./ethereum-adapter/bin/lib/src/eth-adapter.js').processFlags();
+        return require('./ethereum-adapter/eth-adapter.js').processFlags();
     }
 
     if(argv.smartContract){
-        return require('./smart-contract/bin/lib/src/index').processFlags();
+        return require('./smart-contract').processFlags();
     }
 
     console.log(argv);
