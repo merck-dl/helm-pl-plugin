@@ -9,11 +9,16 @@ function processFlags() {
         return require('./utils').showHelp();
     }
 
-    deploySmartContracts(argv.i);
+    if (!argv.o){
+        console.log('Output path not provided.\n\n');
+        return require('./utils').showHelp();
+    }
+
+    deploySmartContracts(argv.i, argv.o);
 }
 
 const downloadSmartContracts = require("./downloadSmartContracts").downloadAndStoreSmartContracts;
-function getConfig(inputPath) {
+function getConfig(inputPath, outputPath) {
     const path = require('path');
     const inputValuesPath = path.resolve(inputPath);
 
@@ -21,10 +26,7 @@ function getConfig(inputPath) {
     const fs = require('fs');
     const inputYamlFile = fs.readFileSync(inputValuesPath).toString('utf8');
     const parsedInputFile = yaml.load(inputYamlFile);
-    for (let pth in parsedInputFile.paths) {
-        parsedInputFile.paths[pth] = path.join(__dirname, parsedInputFile.paths[pth]);
-    }
-
+    parsedInputFile.outputPath = path.resolve(outputPath);
     return parsedInputFile;
 }
 
