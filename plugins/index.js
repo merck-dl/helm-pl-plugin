@@ -1,33 +1,39 @@
-
+const utils = require("./utils");
 function processFlags(){
     const argv = require('minimist')(process.argv)
     if (argv.h || argv.help){
         return showHelp();
     }
+
+    let fnToExecute;
+
     if (argv.newNetwork){
-        return require('./new-network/new-network').processFlags();
+        fnToExecute = require('./new-network/new-network').generateInitialNodeCrypto;
     }
 
     if (argv.joinNetwork){
-        return require('./join-network/join-network').processFlags();
+        fnToExecute = require('./join-network/join-network').generateNodeCrypto;
     }
 
     if (argv.updatePartnersInfo){
-        return require('./update-partners-info/update-partners-info').processFlags();
+        fnToExecute = require('./update-partners-info/update-partners-info').aggregatePartnersInfo;
     }
 
     if (argv.ethAdapter){
-        return require('./ethereum-adapter/eth-adapter.js').processFlags();
+        fnToExecute = require('./ethereum-adapter/eth-adapter.js').downloadFilesAndCreateJSON;
     }
 
     if(argv.smartContract){
-        return require('./smart-contract').processFlags();
+        fnToExecute = require('./smart-contract').deploySmartContracts;
     }
 
-    console.log(argv);
-    return showHelp();
-}
+    if (typeof fnToExecute !== "function") {
+        console.log(argv);
+        return showHelp();
+    }
 
+    utils.processFlagsThenExecute(argv, fnToExecute);
+}
 
 function showHelp(){
     return console.log('\n\nPharmaLedger plugin for helm.\n\n' +
@@ -40,6 +46,5 @@ function showHelp(){
         '--ethAdapter   Demo code for aggregation\n' +
         '--ethereumSC   deploys smart contracts\n\n');
 }
-
 
 processFlags();

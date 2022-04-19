@@ -1,22 +1,3 @@
-function processFlags() {
-    const argv = require('minimist')(process.argv)
-
-    if (argv.h || argv.help) {
-        return require('./utils').showHelp();
-    }
-    if (!argv.i) {
-        console.log('Error: Input values.yaml file not provided.\n\n');
-        return require('./utils').showHelp();
-    }
-
-    if (!argv.o){
-        console.log('Output path not provided.\n\n');
-        return require('./utils').showHelp();
-    }
-
-    deploySmartContracts(argv.i, argv.o);
-}
-
 const downloadSmartContracts = require("./downloadSmartContracts").downloadAndStoreSmartContracts;
 function getConfig(inputPath, outputPath) {
     const path = require('path');
@@ -43,5 +24,5 @@ function deploySmartContracts(inputPath, outputPath) {
 }
 
 module.exports = {
-    processFlags
+    deploySmartContracts
 }

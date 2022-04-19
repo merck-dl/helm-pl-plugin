@@ -1,34 +1,6 @@
-
-
-function processFlags(){
-    const argv = require('minimist')(process.argv)
-
-    if (argv.h || argv.help){
-        return require('./utils').showHelp();
-    }
-    if (!argv.i){
-        console.log('Error: Input values.yaml file not provided.\n\n');
-        return require('./utils').showHelp();
-    }
-
-    if (!argv.o){
-        console.log('Error: Output location not provided.\n\n');
-        return require('./utils').showHelp();
-    }
-
-    generateNodeCrypto(argv.i,argv.o).then(
-        () => {},
-        (err) => {console.log(err)}
-
-    );
-}
-
-
-
-
-async function generateNodeCrypto(inputValuesYamlFile, outputPath){
+async function generateNodeCrypto(inputValuesYamlFile, outputPath) {
     const path = require('path');
-    const utils = require('./utils');
+    const utils = require('../utils');
 
     const inputValuesPath = path.resolve(inputValuesYamlFile);
 
@@ -38,14 +10,14 @@ async function generateNodeCrypto(inputValuesYamlFile, outputPath){
     const parsedInputFile = yaml.load(inputYamlFile);
 
     //configured use case validation
-    if (!parsedInputFile.use_case.joinNetwork.enabled){
+    if (!parsedInputFile.use_case.joinNetwork.enabled) {
         return console.log('Error: values.yaml file has not enabled the joinNetwork use case. Please review the input values.yaml configuration and execute the correct plugin for the configured use case !');
     }
 
     const genesisUrl = parsedInputFile.use_case.joinNetwork.genesis_file_location;
 
-    const generatedInfoFile = path.resolve(outputPath,'join-network.plugin.json');
-    const generatedSecretInfoFile = path.resolve(outputPath,'join-network.plugin.secrets.json');
+    const generatedInfoFile = path.resolve(outputPath, 'join-network.plugin.json');
+    const generatedSecretInfoFile = path.resolve(outputPath, 'join-network.plugin.secrets.json');
     const publicJson = {};
     const secretJson = {};
 
@@ -57,16 +29,13 @@ async function generateNodeCrypto(inputValuesYamlFile, outputPath){
 
     secretJson.nodeKey = node.nodekey;
 
-    fs.writeFileSync(generatedInfoFile,JSON.stringify(publicJson));
-    fs.writeFileSync(generatedSecretInfoFile,JSON.stringify(secretJson));
+    fs.writeFileSync(generatedInfoFile, JSON.stringify(publicJson));
+    fs.writeFileSync(generatedSecretInfoFile, JSON.stringify(secretJson));
 
     console.log('Generated information file for joinNetwork use case : ', generatedInfoFile);
     console.log('Generated secret information file for joinNetwork use case : ', generatedSecretInfoFile);
 }
 
-
-
-
 module.exports = {
-    processFlags
+    generateNodeCrypto
 }

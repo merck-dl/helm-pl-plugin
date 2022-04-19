@@ -1,26 +1,3 @@
-
-
-function processFlags(){
-    const argv = require('minimist')(process.argv)
-    if (argv.h || argv.help){
-        return require('./utils').showHelp();
-    }
-
-    if (!argv.i){
-        console.log('Error: Input values.yaml file not provided.\n\n');
-        return require('./utils').showHelp();
-    }
-
-    if (!argv.o){
-        console.log('Output path was not provided.\n\n');
-        return require('./utils').showHelp();
-    }
-
-    return generateInitialNodeCrypto(argv.i, argv.o);
-}
-
-
-
 function generateInitialNodeCrypto(inputValuesYamlFile, outputPath){
     const path = require('path');
     const inputValuesPath = path.resolve(inputValuesYamlFile);
@@ -41,7 +18,8 @@ function generateInitialNodeCrypto(inputValuesYamlFile, outputPath){
     const secretJson = {}
 
     const utils = require('./utils');
-    const node = utils.generateValidator();
+    const modulesUtils = require('../utils');
+    const node = modulesUtils.generateValidator();
     const genesisextradata = utils.getGenesisExtraData([node.nodeAddress]);
     const admAccount = utils.createAdmAcc();
 
@@ -65,6 +43,6 @@ function generateInitialNodeCrypto(inputValuesYamlFile, outputPath){
 
 
 module.exports = {
-    processFlags
+    generateInitialNodeCrypto
 }
 

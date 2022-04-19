@@ -1,15 +1,3 @@
-function generateValidator(){
-    const crypto = require('crypto');
-    const entropy = crypto.randomBytes(128);
-    const eth = require('eth-crypto');
-    const identity = eth.createIdentity(entropy);
-    return {
-        nodekey:identity.privateKey.slice(2),
-        nodeAddress : identity.address.toString(),
-        enode : identity.publicKey.toString()
-    }
-}
-
 function getGenesisExtraData(validator){
     const VANITY_DATA = "0x0000000000000000000000000000000000000000000000000000000000000000";
     const rlp =  require('rlp');
@@ -34,7 +22,6 @@ function generatePassword(){
 
 
 function createAdmAcc(){
-
     const keythereum = require('keythereum');
     const params = {keyBytes: 32, ivBytes: 16};
     const dk = keythereum.create(params);
@@ -61,18 +48,8 @@ function createAdmAcc(){
 
 }
 
-function showHelp(){
-    return console.log('\n\nPharmaLedger plugin for helm.\n\n' +
-        'Usage : helm plugin-name --newNetwork -i <input> -o <output> \n\n'+
-        '--newNetwork command flags:\n\n' +
-        '-i <values.yaml file path>\n' +
-        '-o <output path where to store the generated json files>\n\n');
-}
-
 
 module.exports = {
-    generateValidator,
     getGenesisExtraData,
-    createAdmAcc,
-    showHelp
+    createAdmAcc
 }

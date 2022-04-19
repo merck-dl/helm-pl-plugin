@@ -1,39 +1,10 @@
-
-
-function processFlags(){
-    const argv = require('minimist')(process.argv)
-
-    if (argv.h || argv.help){
-        return require('./utils').showHelp();
-    }
-    if (!argv.i){
-        console.log('Input values.yaml file not provided.\n\n');
-        return require('./utils').showHelp();
-    }
-
-    if (!argv.o){
-        console.log('Output path not provided.\n\n');
-        return require('./utils').showHelp();
-    }
-
-    aggregatePartnersInfo(argv.i,argv.o).then(
-        () => {},
-        (err) => {console.log(err)}
-
-    );
-}
-
-
-
-
 async function aggregatePartnersInfo(inputValuesYamlFile, outputPath){
-
     const path = require('path');
     const inputValuesPath = path.resolve(inputValuesYamlFile);
 
     const yaml = require('js-yaml');
     const fs = require('fs');
-    const utils = require('./utils');
+    const utils = require('../utils');
     const inputYamlFile = fs.readFileSync(inputValuesPath).toString('utf8');
     const parsedInputFile = yaml.load(inputYamlFile);
     //configured use case validation
@@ -71,9 +42,6 @@ async function aggregatePartnersInfo(inputValuesYamlFile, outputPath){
 
 }
 
-
-
-
 module.exports = {
-    processFlags
+    aggregatePartnersInfo
 }
