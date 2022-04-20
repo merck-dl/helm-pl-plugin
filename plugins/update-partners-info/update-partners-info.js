@@ -16,23 +16,33 @@ async function aggregatePartnersInfo(inputValuesYamlFile, outputPath){
     const publicJson = {};
     publicJson.peers = [];
 
-    const rawshared = parsedInputFile.use_case.updatePartnersInfo.shared_data_location;
+    const token = parsedInputFile.git_shared_configuration.read_write_token;
+    const repoName = parsedInputFile.git_shared_configuration.repository_name;
+    const baseShareFolder = "networks"
+    const networkName = parsedInputFile.deployment.network_name;
+    const enodeFile = "enode";
+    const validatorFile = "validator.address";
+    const enodeAddressFile = "enode.address";
+    const enodeAddressPortFile = "enode.address.port";
+
+
+    const rawshared = `https://raw.githubusercontent.com/${repoName}/master/${baseShareFolder}/${networkName}`;
     const peers = parsedInputFile.use_case.updatePartnersInfo.peers;
     for (let i = 0; i < peers.length ; i++) {
         const peer = peers[i];
-        const enodeurl = rawshared+'/'+peer+'/'+'enode';
+        const enodeurl = `${rawshared}/${peer}/${enodeFile}` ;
         console.log('Reading : ',enodeurl);
         const nodeInfo = {};
-        nodeInfo.enode = (await utils.dlFile(enodeurl)).toString().trim();
-        const nodeaddressurl = rawshared+'/'+peer+'/'+'validator.address';
+        nodeInfo.enode = (await utils.dlFile(enodeurl, token)).toString().trim();
+        const nodeaddressurl = `${rawshared}/${peer}/${validatorFile}`;
         console.log('Reading: ',nodeaddressurl);
-        nodeInfo.nodeAddress = (await utils.dlFile(nodeaddressurl)).toString().trim();
-        const enodeAddressUrl = rawshared+'/'+peer+'/'+'enode.address';
+        nodeInfo.nodeAddress = (await utils.dlFile(nodeaddressurl, token)).toString().trim();
+        const enodeAddressUrl = `${rawshared}/${peer}/${enodeAddressFile}`;
         console.log('Reading: ',enodeAddressUrl);
-        nodeInfo.enodeAddress = (await utils.dlFile(enodeAddressUrl)).toString().trim();
-        const enodeAddressPortUrl = rawshared+'/'+peer+'/'+'enode.address.port';
+        nodeInfo.enodeAddress = (await utils.dlFile(enodeAddressUrl,token)).toString().trim();
+        const enodeAddressPortUrl = `${rawshared}/${peer}/${enodeAddressPortFile}`;
         console.log('Reading: ',enodeAddressPortUrl);
-        nodeInfo.enodeAddressPort = (await utils.dlFile(enodeAddressPortUrl)).toString().trim();
+        nodeInfo.enodeAddressPort = (await utils.dlFile(enodeAddressPortUrl,token)).toString().trim();
 
         publicJson.peers.push(nodeInfo);
     }
@@ -41,6 +51,8 @@ async function aggregatePartnersInfo(inputValuesYamlFile, outputPath){
     console.log('Generated information file for updatePartnersInfo use case : ', generatedInfoFile);
 
 }
+
+
 
 module.exports = {
     aggregatePartnersInfo

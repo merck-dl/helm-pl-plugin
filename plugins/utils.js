@@ -18,15 +18,30 @@ function promisify(fun) {
     };
 }
 
-async function dlFile(githubUrl){
-    return promisify(downloadFile)(githubUrl);
+async function dlFile(githubUrl, token){
+    return promisify(downloadFile)(githubUrl, token);
 }
 
-function downloadFile(url, callback) {
+function downloadFile(url,token, callback) {
+    if (typeof token === "function"){
+        callback = token;
+        token = undefined;
+    }
     const urlObj = new URL(url);
     const http = require(urlObj.protocol.slice(0, -1));
     let data = "";
-    http.get(url, (res) => {
+    let options;
+    if (token)
+    {
+        options = {
+            headers: {
+                "Authorization": `token ${token}`
+            }
+        }
+    } else {
+        options = {};
+    }
+    http.get(url, options, (res) => {
         res.on('data', (chunk) => {
             data += chunk.toString();
         });
