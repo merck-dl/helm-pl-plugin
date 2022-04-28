@@ -1,7 +1,18 @@
-const constants = require("./constants");
+const constants = require("../constants");
 const path = require("path");
 const fs = require("fs");
-const {createOrgAcc: createOrgAccount} = require("./createOrgAcc");
+const utils = require("../utils");
+
+function getAccountInfo(config) {
+    let orgAcc;
+    try {
+        orgAcc = JSON.parse(fs.readFileSync(path.join(config.outputPath, constants.PATHS.ORG_ACCOUNT), "utf-8"));
+    } catch (e) {
+        orgAcc = utils.createOrgAccount();
+        fs.writeFileSync(path.join(config.outputPath, constants.PATHS.ORG_ACCOUNT), JSON.stringify(orgAcc));
+    }
+    return orgAcc;
+}
 
 function deploySmartContract(web3, accountInfo, contractInfo, contractName, contractArgs, callback) {
     let abi = contractInfo.abi;
@@ -180,7 +191,7 @@ function deploySmartContracts(accountInfo, config, callback) {
 }
 
 function deploySmartContractsAndStoreInfo(config) {
-    const accountInfo = createOrgAccount();
+    const accountInfo = getAccountInfo(config);
     deploySmartContracts(accountInfo, config, (err, contractsInfo) => {
         if (err) {
             console.log(err);
