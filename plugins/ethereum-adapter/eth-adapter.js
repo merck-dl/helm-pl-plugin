@@ -9,7 +9,7 @@ async function dlFilesAndWriteJsonFile(inputPath, outputPath) {
     const utils = require('../utils');
     const smartContractInfo = await utils.dlFile(config.smartContractInfoLocation)
     outputPath = path.join(path.resolve(outputPath), constants.PATHS.ETH_ADAPTER_OUTPUT);
-    fs.writeFileSync(outputPath, JSON.stringify(smartContractInfo));
+    fs.writeFileSync(outputPath, smartContractInfo);
 }
 module.exports = {
     downloadFilesAndCreateJSON: function (inputPath, outputPath) {
