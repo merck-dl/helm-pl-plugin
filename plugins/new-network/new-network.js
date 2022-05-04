@@ -25,7 +25,7 @@ function generateInitialNodeCrypto(inputValuesYamlFile, outputPath){
 
     publicJson.extradata = genesisextradata;
     publicJson.enode = node.enode;
-    publicJson.nodeAddress = node.nodeAddress;
+    publicJson.nodeKeyPublic = node.nodeAddress;
     publicJson.genesisAccount = admAccount.account;
 
     secretJson.nodeKey = node.nodekey;
