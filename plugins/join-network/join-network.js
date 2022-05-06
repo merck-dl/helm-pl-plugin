@@ -28,7 +28,7 @@ async function generateNodeCrypto(inputValuesYamlFile, outputPath) {
     const node = utils.generateValidator();
 
     publicJson.enode = node.enode;
-    publicJson.nodeAddress = node.nodeAddress;
+    publicJson.nodeKeyPublic = node.nodeAddress;
     console.log('Downloading : ', genesisUrl);
     try {
         publicJson.genesis = await utils.dlFile(genesisUrl, token);
