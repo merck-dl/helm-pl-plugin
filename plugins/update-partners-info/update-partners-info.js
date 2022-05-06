@@ -21,7 +21,7 @@ async function aggregatePartnersInfo(inputValuesYamlFile, outputPath){
     const baseShareFolder = "networks"
     const networkName = parsedInputFile.deployment.network_name;
     const enodeFile = "enode";
-    const validatorFile = "validator.address";
+    const validatorFile = "validator.keypub";
     const enodeAddressFile = "enode.address";
     const enodeAddressPortFile = "enode.address.port";
 
