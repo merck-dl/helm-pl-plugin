@@ -36,7 +36,7 @@ async function aggregatePartnersInfo(inputValuesYamlFile, outputPath){
         nodeInfo.enode = (await utils.dlFile(enodeurl, token)).toString().trim();
         const nodeaddressurl = `${rawshared}/${peer}/${validatorFile}`;
         console.log('Reading: ',nodeaddressurl);
-        nodeInfo.nodeAddress = (await utils.dlFile(nodeaddressurl, token)).toString().trim();
+        nodeInfo.nodeKeyPublic = (await utils.dlFile(nodeaddressurl, token)).toString().trim();
         const enodeAddressUrl = `${rawshared}/${peer}/${enodeAddressFile}`;
         console.log('Reading: ',enodeAddressUrl);
         nodeInfo.enodeAddress = (await utils.dlFile(enodeAddressUrl,token)).toString().trim();
