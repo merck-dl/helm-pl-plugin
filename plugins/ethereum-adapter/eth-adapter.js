@@ -7,9 +7,20 @@ async function dlFilesAndWriteJsonFile(inputPath, outputPath) {
     const inputYamlFile = fs.readFileSync(inputValuesPath).toString('utf8');
     const config = yaml.load(inputYamlFile);
     const utils = require('../utils');
-    const smartContractInfo = await utils.dlFile(config.smartContractInfoLocation)
+
+    const token = config.smart_contract_shared_configuration.read_write_token;
+    const repoName = config.smart_contract_shared_configuration.repository_name;
+    const baseShareFolder = "networks";
+    const networkName = config.smart_contract_shared_configuration.network_name;
+    const smartContractFileName = config.smart_contract_shared_configuration.smartContractInfoName;
+    const smartContractUrl = `https://raw.githubusercontent.com/${repoName}/master/${baseShareFolder}/${networkName}/${smartContractFileName}`
+
+
+    const smartContractInfo = await utils.dlFile(smartContractUrl,token);
+    console.log('Downloaded file : ', smartContractUrl);
     outputPath = path.join(path.resolve(outputPath), constants.PATHS.ETH_ADAPTER_OUTPUT);
     fs.writeFileSync(outputPath, smartContractInfo);
+    console.log('Configuration created at : ', outputPath);
 }
 module.exports = {
     downloadFilesAndCreateJSON: function (inputPath, outputPath) {
