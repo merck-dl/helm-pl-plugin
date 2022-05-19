@@ -1,14 +1,8 @@
 const downloadSmartContracts = require("./downloadSmartContracts").downloadAndStoreSmartContracts;
-function getConfig(inputPath, outputPath) {
+function getConfig(config, outputPath) {
     const path = require('path');
-    const inputValuesPath = path.resolve(inputPath);
-
-    const yaml = require('js-yaml');
-    const fs = require('fs');
-    const inputYamlFile = fs.readFileSync(inputValuesPath).toString('utf8');
-    const parsedInputFile = yaml.load(inputYamlFile);
-    parsedInputFile.outputPath = path.resolve(outputPath);
-    return parsedInputFile;
+    config.outputPath = path.resolve(outputPath);
+    return config;
 }
 
 function deploySmartContracts(inputPath, outputPath) {

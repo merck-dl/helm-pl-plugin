@@ -1,6 +1,6 @@
 const utils = require("./utils");
 function processFlags(){
-    const argv = require('minimist')(process.argv)
+    const argv = utils.processArgv();
     if (argv.h || argv.help){
         return showHelp();
     }
@@ -28,7 +28,6 @@ function processFlags(){
     }
 
     if (typeof fnToExecute !== "function") {
-        console.log(argv);
         return showHelp();
     }
 

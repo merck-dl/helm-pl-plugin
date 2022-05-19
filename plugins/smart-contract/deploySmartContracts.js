@@ -124,9 +124,16 @@ function waitForTransactionToFinish(web3, hash, callback) {
 function uploadContractsInfo(contractsInfo, config) {
     const childProcess = require("child_process");
     const tmpDir = path.join(require("os").tmpdir(), require("crypto").randomBytes(3).toString("hex"));
-    childProcess.execSync(`git clone ${config.git_upload.git_repo_with_access_token} ${path.join(tmpDir, constants.PATHS.SHARED_REPO_NAME)}`);
+    const token = config.git_shared_configuration.read_write_token;
+    const repoName = config.git_shared_configuration.repository_name;
+    //git_repo_with_access_token: "https://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:x-oauth-basic@github.com/skutner/shared-repository"
+    const sharedRepoURL = `https://${token}:x-oauth-basic@github.com/${repoName}`;
+    childProcess.execSync(`git clone ${sharedRepoURL} ${path.join(tmpDir, constants.PATHS.SHARED_REPO_NAME)}`);
 
-    const sharedRepoPath = path.join(tmpDir, constants.PATHS.SHARED_REPO_NAME, config.git_upload.git_repo_storage_path, config.network_name);
+    console.log("=====================================================================================================")
+    console.log(config);
+    console.log(config.git_upload.git_repo_storage_path, config.deployment.network_name);
+    const sharedRepoPath = path.join(tmpDir, constants.PATHS.SHARED_REPO_NAME, config.git_upload.git_repo_storage_path, config.deployment.network_name);
 
     storeSmartContractsInfo(sharedRepoPath, contractsInfo, config);
 

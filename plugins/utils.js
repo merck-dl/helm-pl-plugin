@@ -1,5 +1,4 @@
 const constants = require("./constants");
-
 function promisify(fun) {
     return function (...args) {
         return new Promise((resolve, reject) => {
@@ -109,7 +108,79 @@ function processFlagsThenExecute(argv, fnToExecute) {
         return require('./utils').showHelp();
     }
 
-    fnToExecute(argv.i, argv.o);
+    fnToExecute(aggregateYamlFiles(argv.i), argv.o);
+}
+
+function processArgv() {
+    let argv = process.argv.slice(2);
+    const processedArgv = {};
+    let flag;
+    for (let i = 0; i < argv.length; i++) {
+        if (argv[i].startsWith("-")) {
+            flag = argv[i].replaceAll("-", "");
+            processedArgv[flag] = [];
+        } else {
+            if (typeof flag === "undefined") {
+                throw Error("Flags should be preceded by - or --");
+            }
+            processedArgv[flag].push(argv[i]);
+        }
+    }
+
+    for (let prop in processedArgv) {
+        if (processedArgv[prop].length === 0) {
+            processedArgv[prop] = true;
+        }
+
+        if (processedArgv[prop].length === 1) {
+            processedArgv[prop] = processedArgv[prop][0];
+        }
+    }
+
+    return processedArgv;
+}
+
+function createConfig(config, defaultConfig) {
+    if (typeof config === "undefined") {
+        return defaultConfig;
+    }
+
+    //ensure that the config object will contain all the necessary keys for server configuration
+    for (let mandatoryKey in defaultConfig) {
+        if (typeof config[mandatoryKey] === "undefined") {
+            config[mandatoryKey] = defaultConfig[mandatoryKey];
+        }
+    }
+    return __createConfigRecursively(config, defaultConfig);
+
+    function __createConfigRecursively(config, defaultConfig) {
+        for (let prop in defaultConfig) {
+            if (typeof config[prop] === "object" && !Array.isArray(config[prop])) {
+                __createConfigRecursively(config[prop], defaultConfig[prop]);
+            } else {
+                if (typeof config[prop] === "undefined") {
+                    config[prop] = defaultConfig[prop];
+                    __createConfigRecursively(config[prop], defaultConfig[prop]);
+                }
+            }
+        }
+        return config;
+    }
+}
+
+function aggregateYamlFiles(filePaths) {
+    if (!Array.isArray(filePaths)) {
+        filePaths = [filePaths];
+    }
+    const fs = require("fs");
+    let outputJson = {};
+    for (let filePath of filePaths) {
+        let content = fs.readFileSync(filePath).toString();
+        const yaml = require('js-yaml');
+        content = yaml.load(content);
+        outputJson = createConfig(content, outputJson);
+    }
+    return outputJson;
 }
 
 module.exports = {
@@ -117,6 +188,8 @@ module.exports = {
     showHelp,
     processFlagsThenExecute,
     dlFile,
-    createOrgAccount
+    createOrgAccount,
+    processArgv,
+    aggregateYamlFiles
 }
 
