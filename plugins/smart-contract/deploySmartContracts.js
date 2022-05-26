@@ -129,11 +129,7 @@ function uploadContractsInfo(contractsInfo, config) {
     //git_repo_with_access_token: "https://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:x-oauth-basic@github.com/skutner/shared-repository"
     const sharedRepoURL = `https://${token}:x-oauth-basic@github.com/${repoName}`;
     childProcess.execSync(`git clone ${sharedRepoURL} ${path.join(tmpDir, constants.PATHS.SHARED_REPO_NAME)}`);
-
-    console.log("=====================================================================================================")
-    console.log(config);
-    console.log(config.git_upload.git_repo_storage_path, config.deployment.network_name);
-    const sharedRepoPath = path.join(tmpDir, constants.PATHS.SHARED_REPO_NAME, config.git_upload.git_repo_storage_path, config.deployment.network_name);
+    const sharedRepoPath = path.join(tmpDir, constants.PATHS.SHARED_REPO_NAME, config.git_upload.git_repo_storage_path, config.network_name);
 
     storeSmartContractsInfo(sharedRepoPath, contractsInfo, config);
 

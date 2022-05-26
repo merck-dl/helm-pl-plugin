@@ -8,8 +8,6 @@ async function dlFilesAndWriteJsonFile(config, outputPath) {
     const repoName = config.smart_contract_shared_configuration.repository_name;
     const baseShareFolder = "networks";
     const networkName = config.smart_contract_shared_configuration.network_name;
-    console.log("=====================================================================================================");
-    console.log(config);
     const smartContractFileName = config.smart_contract_shared_configuration.smartContractInfoName;
     const smartContractUrl = `https://raw.githubusercontent.com/${repoName}/master/${baseShareFolder}/${networkName}/${smartContractFileName}`
     console.log("smart contract url .....", smartContractUrl);

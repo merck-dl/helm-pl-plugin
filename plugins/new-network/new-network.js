@@ -1,5 +1,4 @@
 function generateInitialNodeCrypto(config, outputPath) {
-    console.log(config);
     const path = require('path');
     const fs = require('fs');
     //configured use case validation
