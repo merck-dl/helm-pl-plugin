@@ -10,7 +10,6 @@ async function dlFilesAndWriteJsonFile(config, outputPath) {
     const networkName = config.smart_contract_shared_configuration.network_name;
     const smartContractFileName = config.smart_contract_shared_configuration.smartContractInfoName;
     const smartContractUrl = `https://raw.githubusercontent.com/${repoName}/master/${baseShareFolder}/${networkName}/${smartContractFileName}`
-    console.log("smart contract url .....", smartContractUrl);
     const smartContractInfo = await utils.dlFile(smartContractUrl,token);
     console.log('Downloaded file : ', smartContractUrl);
     const ethAdapterInfoPath = path.join(path.resolve(outputPath), constants.PATHS.ETH_ADAPTER_OUTPUT);

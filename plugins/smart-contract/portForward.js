@@ -6,10 +6,8 @@ function portForward(config, callback) {
     }
     let child;
     if (typeof config.fullnameOverride !== "undefined") {
-        console.log("port forward using deployment name ........")
         child = childProcess.spawn("kubectl", ["port-forward", `--namespace=${config.namespace}`, `deployment/${config.fullnameOverride}`, `8545:8545`], {detached: true});
     } else if (typeof config.pod_name !== "undefined") {
-        console.log("port forward using pod name ........")
         child = childProcess.spawn("kubectl", ["port-forward", `--namespace=${config.namespace}`, `${config.pod_name}`, `8545:8545`], {detached: true});
     } else {
         throw Error("Missing deployment.fullnameOverride and pod_name from config");

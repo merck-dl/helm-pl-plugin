@@ -97,14 +97,14 @@ function compileSmartContracts(config, contracts) {
 }
 
 function waitForTransactionToFinish(web3, hash, callback) {
-    console.log('waiting for transaction to finish');
+    console.log('Waiting for transaction to finish ...');
     const receipt = () => {
         web3.eth.getTransactionReceipt(hash).then((tr) => {
                 if (tr === null) {
-                    console.log('waiting for transaction to finish');
+                    console.log('Waiting for transaction to finish ...');
                     setTimeout(() => {
                         receipt();
-                    }, 1000);
+                    }, 2000);
                     return;
                 }
                 console.log('Transaction finished : ', tr);
@@ -143,7 +143,7 @@ function uploadContractsInfo(contractsInfo, config) {
     }
 
     childProcess.execSync(`cd ${sharedRepoPath} && git add .`);
-    childProcess.execSync(`cd ${sharedRepoPath} && git commit -m "${config.git_upload.git_commit_description}"`);
+    childProcess.execSync(`cd ${sharedRepoPath} && git commit -m "${constants.COMMIT_MESSAGES.SMART_CONTRACT_UPDATE}"`);
     childProcess.execSync(`cd ${sharedRepoPath} && git push origin master`);
     fs.rmSync(tmpDir, {recursive: true})
     console.log("Smart contract info was stored successfully");
@@ -201,7 +201,6 @@ function deploySmartContractsAndStoreInfo(config) {
             process.exit(1);
         }
 
-        console.log("Smart contracts were deployed");
         storeSmartContractsInfo(config.outputPath, contractsInfo, config);
         if (config.git_upload.enabled) {
             uploadContractsInfo(contractsInfo, config);

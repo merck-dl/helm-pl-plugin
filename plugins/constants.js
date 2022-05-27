@@ -16,5 +16,8 @@ module.exports = {
         JOIN_NETWORK: "join-networks",
         SMART_CONTRACT: "smart-contract",
         UPDATE_PARTNERS_INFO: "update-partners-info"
+    },
+    COMMIT_MESSAGES: {
+        SMART_CONTRACT_UPDATE: "Updated smart contract ABI and address"
     }
 }
