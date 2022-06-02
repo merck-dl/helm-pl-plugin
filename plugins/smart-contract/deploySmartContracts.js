@@ -135,7 +135,6 @@ function uploadContractsInfo(contractsInfo, config) {
 
     childProcess.execSync(`cd ${sharedRepoPath} && git config user.name ${config.git_upload.user}`);
     childProcess.execSync(`cd ${sharedRepoPath} && git config user.email ${config.git_upload.email}`);
-``
     let remotes = childProcess.execSync(`cd ${sharedRepoPath} && git remote -v`);
 
     if (remotes.length === 0) {
@@ -150,6 +149,11 @@ function uploadContractsInfo(contractsInfo, config) {
 }
 
 function storeSmartContractsInfo(outputPath, contractsInfo, config) {
+    try {
+        fs.accessSync(outputPath);
+    } catch (e) {
+        fs.mkdirSync(outputPath, {recursive: true});
+    }
     for (let contract in contractsInfo) {
         const contractIndex = config.smart_contracts.findIndex(sc => sc.smart_contract_name === contract);
         fs.writeFileSync(path.join(outputPath, config.smart_contracts[contractIndex].git_upload_smart_contract_filename), JSON.stringify(contractsInfo[contract], null, "\t"));
