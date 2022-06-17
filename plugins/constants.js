@@ -7,7 +7,9 @@ module.exports = {
         SHARED_SMART_CONTRACT_DATA_FOLDER: "networks/smart-contract",
         SMART_CONTRACTS_REPO: "./smartContracts",
         ORG_ACCOUNT: "orgAccount.json",
-        ETH_ADAPTER_OUTPUT: "eth-adapter.plugin.json"
+        ETH_ADAPTER_OUTPUT: "eth-adapter.plugin.json",
+        SMART_CONTRACT_NAME: "anchoring",
+        BASE_SHARED_FOLDER: "networks"
     },
     PLUGINS: {
         ETHEREUM_ADAPTER: "ethereum-adapter",

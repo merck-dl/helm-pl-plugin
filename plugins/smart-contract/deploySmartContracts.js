@@ -123,14 +123,14 @@ function waitForTransactionToFinish(web3, hash, callback) {
 
 function uploadContractsInfo(contractsInfo, config) {
     const childProcess = require("child_process");
-    const tmpDir = path.join(require("os").tmpdir(), require("crypto").randomBytes(3).toString("hex"));
-    const token = config.git_shared_configuration.read_write_token;
-    const repoName = config.git_shared_configuration.repository_name;
+    // const token = config.git_shared_configuration.read_write_token;
+    // const repoName = config.git_shared_configuration.repository_name;
     //git_repo_with_access_token: "https://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:x-oauth-basic@github.com/skutner/shared-repository"
-    const sharedRepoURL = `https://${token}:x-oauth-basic@github.com/${repoName}`;
-    childProcess.execSync(`git clone ${sharedRepoURL} ${path.join(tmpDir, constants.PATHS.SHARED_REPO_NAME)}`);
-    const sharedRepoPath = path.join(tmpDir, constants.PATHS.SHARED_REPO_NAME, config.git_upload.git_repo_storage_path, config.network_name);
-
+    // const sharedRepoURL = `https://${token}:x-oauth-basic@github.com/${repoName}`;
+    // childProcess.execSync(`git clone ${sharedRepoURL} ${path.join(tmpDir, constants.PATHS.SHARED_REPO_NAME)}`);
+    // const sharedRepoPath = path.join(tmpDir, constants.PATHS.SHARED_REPO_NAME, config.git_upload.git_repo_storage_path, config.network_name);
+    const {sharedRepoPath, tmpDir} = utils.cloneSharedRepo(config);
+    console.log("Shared repo path", sharedRepoPath);
     storeSmartContractsInfo(sharedRepoPath, contractsInfo, config);
 
     childProcess.execSync(`cd ${sharedRepoPath} && git config user.name ${config.git_upload.user}`);
@@ -156,7 +156,18 @@ function storeSmartContractsInfo(outputPath, contractsInfo, config) {
     }
     for (let contract in contractsInfo) {
         const contractIndex = config.smart_contracts.findIndex(sc => sc.smart_contract_name === contract);
-        fs.writeFileSync(path.join(outputPath, config.smart_contracts[contractIndex].git_upload_smart_contract_filename), JSON.stringify(contractsInfo[contract], null, "\t"));
+        console.log("Storing smart contract info...",)
+        let smartContractAbiPath = path.join(outputPath, `smartContractAbi.json`);
+        let smartContractAddressPath = path.join(outputPath, `smartContractAddress.json`);
+        if (contractIndex > 0) {
+            smartContractAbiPath = path.join(outputPath, `smartContractAbi_${contractIndex}.json`);
+            smartContractAddressPath = path.join(outputPath, `smartContractAddress_${contractIndex}.json`);
+        }
+
+        console.log("smart contract abi path", smartContractAbiPath)
+        console.log("smart contract address path", smartContractAddressPath)
+        fs.writeFileSync(smartContractAbiPath, JSON.stringify(contractsInfo[contract].abi, null, "\t"));
+        fs.writeFileSync(smartContractAddressPath, JSON.stringify(contractsInfo[contract].address, null, "\t"));
     }
 }
 

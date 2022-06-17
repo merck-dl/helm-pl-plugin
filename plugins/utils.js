@@ -1,4 +1,6 @@
 const constants = require("./constants");
+const path = require("path");
+const childProcess = require("child_process");
 function promisify(fun) {
     return function (...args) {
         return new Promise((resolve, reject) => {
@@ -183,6 +185,22 @@ function aggregateYamlFiles(filePaths) {
     return outputJson;
 }
 
+function cloneSharedRepo(config) {
+    const childProcess = require("child_process");
+    const tmpDir = path.join(require("os").tmpdir(), require("crypto").randomBytes(3).toString("hex"));
+    const token = config.git_shared_configuration.read_write_token;
+    const repoName = config.git_shared_configuration.repository_name;
+    const sharedRepoURL = `https://${token}:x-oauth-basic@github.com/${repoName}`;
+    childProcess.execSync(`git clone ${sharedRepoURL} ${path.join(tmpDir, constants.PATHS.SHARED_REPO_NAME)}`);
+    console.log("Config ...", config);
+    const sharedRepoPath = path.join(tmpDir, constants.PATHS.SHARED_REPO_NAME, constants.PATHS.BASE_SHARED_FOLDER, config.network_name);
+
+    return {
+        sharedRepoPath,
+        tmpDir
+    };
+}
+
 module.exports = {
     generateValidator,
     showHelp,
@@ -190,6 +208,7 @@ module.exports = {
     dlFile,
     createOrgAccount,
     processArgv,
-    aggregateYamlFiles
+    aggregateYamlFiles,
+    cloneSharedRepo
 }
 

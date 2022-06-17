@@ -1,7 +1,8 @@
+const path = require("path");
+const constants = require("../constants");
+const fs = require('fs');
+
 async function aggregatePartnersInfo(config, outputPath) {
-    const path = require('path');
-    const fs = require('fs');
-    const utils = require('../utils');
     //configured use case validation
     if (!config.use_case.updatePartnersInfo.enabled) {
         return console.log('Error : values.yaml file has not enabled the updatePartnersInfo use case. Please review the input values.yaml configuration and execute the correct plugin for the configured use case !');
@@ -11,37 +12,17 @@ async function aggregatePartnersInfo(config, outputPath) {
     const publicJson = {};
     publicJson.peers = [];
 
-    const token = config.git_shared_configuration.read_write_token;
-    const repoName = config.git_shared_configuration.repository_name;
-    const baseShareFolder = "networks"
-    console.log("config", config);
-    const networkName = config.deployment.network_name;
-    const enodeFile = "enode";
-    const validatorFile = "validator.keypub";
-    const enodeAddressFile = "enode.address";
-    const enodeAddressPortFile = "enode.address.port";
-
-    console.log("networkName", networkName);
-    const rawshared = `https://raw.githubusercontent.com/${repoName}/master/${baseShareFolder}/${networkName}`;
     const peers = config.use_case.updatePartnersInfo.peers;
-    console.log("peers", peers);
+    const sharedRepoPath = cloneSharedRepo(config);
+    const partnersDataPath = path.join(sharedRepoPath, "editable");
     for (let i = 0; i < peers.length; i++) {
-        const peer = peers[i];
-        const enodeurl = `${rawshared}/${peer}/${enodeFile}`;
-        console.log('Reading : ', enodeurl);
-        const nodeInfo = {};
-        nodeInfo.enode = (await utils.dlFile(enodeurl, token)).toString().trim();
-        const nodeaddressurl = `${rawshared}/${peer}/${validatorFile}`;
-        console.log('Reading: ', nodeaddressurl);
-        nodeInfo.nodeKeyPublic = (await utils.dlFile(nodeaddressurl, token)).toString().trim();
-        const enodeAddressUrl = `${rawshared}/${peer}/${enodeAddressFile}`;
-        console.log('Reading: ', enodeAddressUrl);
-        nodeInfo.enodeAddress = (await utils.dlFile(enodeAddressUrl, token)).toString().trim();
-        const enodeAddressPortUrl = `${rawshared}/${peer}/${enodeAddressPortFile}`;
-        console.log('Reading: ', enodeAddressPortUrl);
-        nodeInfo.enodeAddressPort = (await utils.dlFile(enodeAddressPortUrl, token)).toString().trim();
+        const peerDataPath = path.join(partnersDataPath, peers[i]);
+        const validatorDataPath = path.join(peerDataPath, "validator");
+        const enodeDataPath = path.join(peerDataPath, "enode");
+        const validatorData = fs.readFileSync(validatorDataPath, "utf-8");
+        const enodeData = fs.readFileSync(enodeDataPath, "utf-8");
 
-        publicJson.peers.push(nodeInfo);
+        publicJson.peers.push(parsePeerData(enodeData, validatorData));
     }
 
     fs.writeFileSync(generatedInfoFile, JSON.stringify(publicJson));
@@ -49,6 +30,19 @@ async function aggregatePartnersInfo(config, outputPath) {
 
 }
 
+function parsePeerData(enodeData, validatorData) {
+    const toTrim = "enode://";
+    enodeData = enodeData.replaceAll(toTrim, "");
+    const splitEnode = enodeData.split("@");
+    const peer = {};
+    peer.enode = splitEnode[0];
+    const enodeAddressAndPort = splitEnode[1].split("?")[0];
+    const splitEnodeAddressAndPort = enodeAddressAndPort.split(":");
+    peer.enodeAddress = splitEnodeAddressAndPort[0];
+    peer.enodeAddressPort = splitEnodeAddressAndPort[1];
+    peer.nodeKeyPublic = validatorData;
+    return peer;
+}
 
 module.exports = {
     aggregatePartnersInfo
