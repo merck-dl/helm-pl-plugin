@@ -27,6 +27,10 @@ function processFlags(){
         fnToExecute = require('./smart-contract').deploySmartContracts;
     }
 
+    if(argv.uploadInfo){
+        fnToExecute = require('./upload-info').uploadQuorumNodeInfo;
+    }
+
     if (typeof fnToExecute !== "function") {
         return showHelp();
     }

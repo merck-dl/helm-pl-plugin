@@ -1,7 +1,7 @@
 const path = require("path");
 const constants = require("../constants");
 const fs = require('fs');
-
+const utils = require("../utils");
 async function aggregatePartnersInfo(config, outputPath) {
     //configured use case validation
     if (!config.use_case.updatePartnersInfo.enabled) {
@@ -13,7 +13,7 @@ async function aggregatePartnersInfo(config, outputPath) {
     publicJson.peers = [];
 
     const peers = config.use_case.updatePartnersInfo.peers;
-    const sharedRepoPath = cloneSharedRepo(config);
+    const {sharedRepoPath} = utils.cloneSharedRepo(config);
     const partnersDataPath = path.join(sharedRepoPath, "editable");
     for (let i = 0; i < peers.length; i++) {
         const peerDataPath = path.join(partnersDataPath, peers[i]);
