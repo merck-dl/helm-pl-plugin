@@ -1,5 +1,4 @@
 const path = require("path");
-const constants = require("../constants");
 const fs = require('fs');
 const utils = require("../utils");
 async function aggregatePartnersInfo(config, outputPath) {

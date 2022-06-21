@@ -1,17 +1,10 @@
 const utils = require("../utils");
 const constants = require("../constants");
+const path = require('path');
+const fs = require('fs');``
 
 async function dlFilesAndWriteJsonFile(config, outputPath) {
-    const path = require('path');
-    const constants = require("../constants");
-    const fs = require('fs');
-    const utils = require('../utils');
     const {sharedRepoPath, tmpDir} = utils.cloneSharedRepo(config);
-    // const baseShareFolder = "networks";
-    // const networkName = config.network_name;
-    // const smartContractFileName = config.smart_contract_shared_configuration.smartContractInfoName;
-    // const smartContractUrl = `https://raw.githubusercontent.com/${repoName}/master/${baseShareFolder}/${networkName}/${smartContractFileName}`
-    // const smartContractInfo = await utils.dlFile(smartContractUrl,token);
     const smartContractAbiPath = path.join(sharedRepoPath, "smartContractAbi.json");
     const smartContractAddressPath = path.join(sharedRepoPath, "smartContractAddress.json");
     const smartContractAbi = fs.readFileSync(smartContractAbiPath, "utf-8")
@@ -22,10 +15,10 @@ async function dlFilesAndWriteJsonFile(config, outputPath) {
         address: JSON.parse(smartContractAddress)
     }
 
-    console.log("Smart contract info ......", JSON.stringify(smartContractInfo));
     const orgAcc = utils.createOrgAccount();
     fs.writeFileSync(path.join(outputPath, constants.PATHS.ORG_ACCOUNT), JSON.stringify(orgAcc));
     fs.writeFileSync(ethAdapterInfoPath, JSON.stringify(smartContractInfo));
+    fs.rmSync(tmpDir, {recursive: true});
     console.log('Configuration created at : ', outputPath);
 }
 module.exports = {

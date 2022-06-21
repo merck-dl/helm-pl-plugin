@@ -192,7 +192,6 @@ function cloneSharedRepo(config) {
     const repoName = config.git_shared_configuration.repository_name;
     const sharedRepoURL = `https://${token}:x-oauth-basic@github.com/${repoName}`;
     childProcess.execSync(`git clone ${sharedRepoURL} ${path.join(tmpDir, constants.PATHS.SHARED_REPO_NAME)}`);
-    console.log("Config ...", config);
     const sharedRepoPath = path.join(tmpDir, constants.PATHS.SHARED_REPO_NAME, constants.PATHS.BASE_SHARED_FOLDER, config.network_name);
 
     return {

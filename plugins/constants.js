@@ -9,7 +9,8 @@ module.exports = {
         ORG_ACCOUNT: "orgAccount.json",
         ETH_ADAPTER_OUTPUT: "eth-adapter.plugin.json",
         SMART_CONTRACT_NAME: "anchoring",
-        BASE_SHARED_FOLDER: "networks"
+        BASE_SHARED_FOLDER: "networks",
+        GENESIS_FILE: "genesis.json"
     },
     PLUGINS: {
         ETHEREUM_ADAPTER: "ethereum-adapter",
