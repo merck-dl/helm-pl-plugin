@@ -10,7 +10,7 @@ module.exports = {
         ETH_ADAPTER_OUTPUT: "eth-adapter.plugin.json",
         SMART_CONTRACT_NAME: "anchoring",
         BASE_SHARED_FOLDER: "networks",
-        GENESIS_FILE: "genesis.json"
+        GENESIS_FILE: "genesis-geth.json"
     },
     PLUGINS: {
         ETHEREUM_ADAPTER: "ethereum-adapter",

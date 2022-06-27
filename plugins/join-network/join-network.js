@@ -1,6 +1,7 @@
 async function generateNodeCrypto(config, outputPath) {
     const path = require('path');
     const utils = require('../utils');
+    const constants = require("../constants");
     const fs = require('fs');
     //configured use case validation
     if (!config.use_case.joinNetwork.enabled) {
@@ -10,7 +11,7 @@ async function generateNodeCrypto(config, outputPath) {
     const repoName = config.git_shared_configuration.repository_name;
     const baseShareFolder = "networks";
     const networkName = config.deployment.network_name;
-    const genesisFileName = "genesis.json";
+    const genesisFileName = constants.PATHS.GENESIS_FILE;
     const genesisUrl = `https://raw.githubusercontent.com/${repoName}/master/${baseShareFolder}/${networkName}/${genesisFileName}`
     console.log("genesis url", genesisUrl);
     console.log("output path", outputPath);
