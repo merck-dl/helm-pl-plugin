@@ -21,6 +21,7 @@ module.exports = {
         UPDATE_PARTNERS_INFO: "update-partners-info"
     },
     COMMIT_MESSAGES: {
-        SMART_CONTRACT_UPDATE: "Updated smart contract ABI and address"
+        SMART_CONTRACT_UPDATE: "Updated smart contract ABI and address",
+        ENODE_INFO_UPDATE: "Updated quorum information"
     }
 }

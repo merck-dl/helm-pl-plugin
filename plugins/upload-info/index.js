@@ -7,8 +7,7 @@ const path = require("path");
 function generateGenesis(config) {
     const balance = "1000000000000000000000000000";
     const genesis = {
-        "alloc": {
-        },
+        "alloc": {},
         "coinbase": "0x0000000000000000000000000000000000000000",
         "config": {
             "homesteadBlock": 0,
@@ -34,7 +33,7 @@ function generateGenesis(config) {
             }
         },
         "difficulty": "0x1",
-        "extraData": `${config.extradata }`,
+        "extraData": `${config.extradata}`,
         "gasLimit": "0xE0000000",
         "mixHash": "0x63746963616c2062797a616e74696e65206661756c7420746f6c6572616e6365",
         "nonce": "0x0",
@@ -56,6 +55,11 @@ function uploadQuorumNodeInfo(config) {
     const commonPath = path.join(sharedRepoPath, "editable", config.deployment.company);
     const enodePath = path.join(commonPath, "enode");
     const validatorPath = path.join(commonPath, "validator");
+    try {
+        fs.accessSync(commonPath);
+    } catch (e) {
+        fs.mkdirSync(commonPath);
+    }
     fs.writeFileSync(enodePath, enode);
     fs.writeFileSync(validatorPath, validator);
 
@@ -74,7 +78,7 @@ function uploadQuorumNodeInfo(config) {
     }
 
     childProcess.execSync(`cd ${sharedRepoPath} && git add .`);
-    childProcess.execSync(`cd ${sharedRepoPath} && git commit -m "${constants.COMMIT_MESSAGES.SMART_CONTRACT_UPDATE}"`);
+    childProcess.execSync(`cd ${sharedRepoPath} && git commit -m "${constants.COMMIT_MESSAGES.ENODE_INFO_UPDATE}"`);
     childProcess.execSync(`cd ${sharedRepoPath} && git push origin master`);
     fs.rmSync(tmpDir, {recursive: true});
     console.log("Uploaded enode and validator public key successfully");
