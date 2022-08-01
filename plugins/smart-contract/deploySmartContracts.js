@@ -156,7 +156,7 @@ function storeSmartContractsInfo(outputPath, contractsInfo, config) {
         }
 
         fs.writeFileSync(smartContractAbiPath, JSON.stringify(contractsInfo[contract].abi, null, "\t"));
-        fs.writeFileSync(smartContractAddressPath, JSON.stringify(contractsInfo[contract].address, null, "\t"));
+        fs.writeFileSync(smartContractAddressPath, JSON.stringify({contractAddress: contractsInfo[contract].address}));
     }
 }
 

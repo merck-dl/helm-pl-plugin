@@ -8,11 +8,12 @@ async function dlFilesAndWriteJsonFile(config, outputPath) {
     const smartContractAbiPath = path.join(sharedRepoPath, "smartContractAbi.json");
     const smartContractAddressPath = path.join(sharedRepoPath, "smartContractAddress.json");
     const smartContractAbi = fs.readFileSync(smartContractAbiPath, "utf-8")
-    const smartContractAddress = fs.readFileSync(smartContractAddressPath, "utf-8")
+    let smartContractAddress = fs.readFileSync(smartContractAddressPath, "utf-8")
+    smartContractAddress = JSON.parse(smartContractAddress);
     const ethAdapterInfoPath = path.join(path.resolve(outputPath), constants.PATHS.ETH_ADAPTER_OUTPUT);
     const smartContractInfo = {
         abi: JSON.parse(smartContractAbi),
-        address: JSON.parse(smartContractAddress)
+        address: smartContractAddress.contractAddress
     }
 
     const orgAcc = utils.createOrgAccount();

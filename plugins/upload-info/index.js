@@ -58,7 +58,7 @@ function uploadQuorumNodeInfo(config) {
     try {
         fs.accessSync(commonPath);
     } catch (e) {
-        fs.mkdirSync(commonPath);
+        fs.mkdirSync(commonPath, {recursive: true});
     }
     fs.writeFileSync(enodePath, enode);
     fs.writeFileSync(validatorPath, validator);
