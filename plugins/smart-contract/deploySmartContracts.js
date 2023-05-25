@@ -199,6 +199,7 @@ function deploySmartContracts(accountInfo, config, callback) {
 
 function deploySmartContractsAndStoreInfo(config) {
     const accountInfo = getAccountInfo(config);
+    console.log('accountInfo', config);
     deploySmartContracts(accountInfo, config, (err, contractsInfo) => {
         if (err) {
             console.log(err);

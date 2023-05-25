@@ -1,0 +1,564 @@
+# Default values.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+image:
+  # -- The repository of the Quorum container image
+  repository: quorumengineering/quorum
+  # -- Image Pull Policy
+  pullPolicy: Always
+  # -- Image tag
+  tag: "22.7.0"
+  # -- sha256 digest of the image.
+  # Do not add the prefix "@sha256:".
+  # Defaults to the digest of tag "22.7.0"
+  # <!-- # pragma: allowlist secret -->
+  sha: "7614e22e0c27732973caca398184b42a013d87ed23b50c536cb21f709668b82d"  # pragma: allowlist secret
+
+## -- The strategy of the deployment. Defaults to Recreate as a PVC is bound to it.
+## See `kubectl explain deployment.spec.strategy` for more and [https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy)
+deploymentStrategy:
+  type: Recreate
+
+# Quorum configuration settings.
+quorum:
+  # -- Directory path to where the persistent volume "data" will be mounted to.
+  # Also some config file will be mounted there.
+  homeMountPath: "/quorum/home"
+  # -- Directory path to where the persistent volume "logs" will be mounted to.
+  logsMountPath: "/quorum/logs"
+  # -- Directory path to the Quorum Data Dir. Must be beyond 'homeMountPath' in order to store data on the persistent volume.
+  dataDirPath: "/quorum/home/dd"
+  # -- File path to genesis file
+  genesisFilePath: "/quorum/home/genesis/genesis-geth.json"
+  # -- Explicitly set network id
+  networkId: 10
+
+  miner:
+    # -- Number of CPU threads to use for mining
+    threads: 1
+    # -- Default minimum difference between two consecutive block's timestamps in seconds
+    blockPeriod: 3
+
+  log:
+    # -- Logging verbosity: 0=silent, 1=error, 2=warn, 3=info, 4=debug, 5=detail
+    verbosity: 3
+    # -- If enabled, emit specially formatted logging checkpoints
+    emitcheckpoints: true
+
+  rpc:
+    corsDomain: "*"
+    # -- The virtual hostnames for the RPC endpoint to listen for.
+    # If you want to restrict it, use {name}-rpc,{name}-rpc.{namespace},{name}-rpc.{namespace}.svc.cluster.local
+    vHosts: "*"
+    # -- The activated APIs at RPC endpoint.
+    api: "admin,eth,debug,miner,net,txpool,personal,web3,istanbul"
+
+  metrics:
+    # -- Enable metrics endpoint which allows monitoring, e.g. via Prometheus
+    enabled: true
+    # -- Enable expensive metrics collection and reporting.
+    expensive: false
+    # -- Enable stand-alone metrics HTTP server listening interface.
+    addr: "0.0.0.0"
+    # -- Metrics HTTP server listening port.
+    port: 9545
+    # -- Add annotations for Prometheus to discover metrics endpoint.
+    prometheusAnnotationsEnabled: true
+
+  # -- Generic extra/additional arguments passed to geth.
+  # See https://blog.ethereum.org/2021/03/03/geth-v1-10-0/#compatibility
+  # For geth 1.9.x (Quorum v21), set "--nousb"
+  # For geth 1.10.x (Quorum v22) with high compatibility to 1.9.x (Quorum v21), set "--snapshot=false --txlookuplimit=0 --cache.preimages --rpc.allow-unprotected-txs"
+  extraArgs: |-
+    --snapshot=false --txlookuplimit=0 --cache.preimages --rpc.allow-unprotected-txs
+#    --nousb
+
+use_case:
+  newNetwork:
+    # -- Enable the new-network use case. Can only be used in collaboration with updatePartnerInfo use case
+    enabled: true
+    plugin_data_common: >-
+      {
+        "extradata": "newNetwork_extradata",
+        "enode": "newNetwork_Enode",
+        "nodeKeyPublic": "newNetwork_NodeKeyPublic",
+        "genesisAccount": "newNetwork_genesisAccount"
+      }
+    # -- Sensitive data.
+    # A JSON object containing two attributes:
+    # 1. "genesisKeyStoreAccount" = a base64 encoded value.
+    # 2. "nodeKey" = The secret private node key.
+    # <!-- pragma: allowlist secret -->
+    plugin_data_secrets: >- # pragma: allowlist secret
+      {
+        "genesisKeyStoreAccount": "ewogICAgImFkZHJlc3MiOiAidGVzdGRhdGEiLAogICAgImNyeXB0byI6IHsKICAgICAgICAiY2lwaGVyIjogImFlcy0xMjgtY3RyIiwKICAgICAgICAiY2lwaGVydGV4dCI6ICJ0ZXN0ZGF0YSIsCiAgICAgICAgImNpcGhlcnBhcmFtcyI6IHsKICAgICAgICAgICAgIml2IjogInRlc3RkYXRhIgogICAgICAgIH0sCiAgICAgICAgIm1hYyI6ICJ0ZXN0ZGF0YSIsCiAgICAgICAgImtkZiI6ICJzY3J5cHQiLAogICAgICAgICJrZGZwYXJhbXMiOiB7CiAgICAgICAgICAgICJka2xlbiI6IDMyLAogICAgICAgICAgICAibiI6IDI2MjE0NCwKICAgICAgICAgICAgInIiOiA4LAogICAgICAgICAgICAicCI6IDEsCiAgICAgICAgICAgICJzYWx0IjogInRlc3RkYXRhIgogICAgICAgIH0KICAgIH0sCiAgICAiaWQiOiAidGVzdGRhdGEiLAogICAgInZlcnNpb24iOiAzCn0=",
+        "nodeKey": "newNetwork_NodeKey"
+      }
+
+  joinNetwork:
+    # -- Enable the join-network use case. Can only be used in collaboration with updatePartnerInfo use case
+    enabled: false
+    # -- Non-sensitive data.
+    # A JSON object containing three attribute:
+    # 1. "enode" = The enode.
+    # 2. "nodeKeyPublic" = The public key of the node starting with "0x".
+    # 3. "genesis" = The genesis JSON file in JSON encoded format.
+    plugin_data_common: >-
+      {
+        "enode": "joinNetwork_enode",
+        "nodeKeyPublic": "joinNetwork_nodeKeyPublic",
+        "genesis": "{ \"key\": \n"value\" }"
+      }
+    # -- Sensitive data.
+    # A JSON object containing one attribute:
+    # 1. "nodeKey" = The secret private node key.
+    plugin_data_secrets: >-
+      {
+        "nodeKey": "joinNetwork_nodeKey"
+      }
+
+  updatePartnersInfo:
+    # -- Enable the update-partners-info use case.
+    # Can only be used in collaboration with new-network or join-network use case.
+    enabled: false
+    plugin_data_common: >-
+      {
+        "peers": [
+          {
+            "enode": "peer1_enode",
+            "enodeAddress": "peer1_enodeAddress",
+            "enodeAddressPort": "peer1_enodeAddressPort",
+            "nodeKeyPublic": "peer1_nodeKeyPublic"
+          },
+          {
+            "enode": "peer2_enode",
+            "enodeAddress": "peer2_enodeAddress",
+            "enodeAddressPort": "peer2_enodeAddressPort",
+            "nodeKeyPublic": "peer2_nodeKeyPublic"
+          }
+        ]
+      }
+
+# Persistence using Persistent Volume Claims
+# See [http://kubernetes.io/docs/user-guide/persistent-volumes/](http://kubernetes.io/docs/user-guide/persistent-volumes/)
+persistence:
+  # Settings for the data PVC.
+  data:
+    # -- The name of an existing PVC to use instead of creating a new one.
+    existingClaim: ""
+    # -- Name of the storage class for data PVC.
+    # If empty or not set then storage class will not be set - which means that the default storage class will be used.
+    storageClassName: ""
+    # -- Size of the data PVC volume.
+    size: "3Gi"
+    # -- Annotations for the data PVC.
+    annotations: {}
+    # -- Finalizers for data PVC.
+    # See [https://kubernetes.io/docs/concepts/storage/persistent-volumes/#storage-object-in-use-protection](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#storage-object-in-use-protection)
+    finalizers:
+      - kubernetes.io/pvc-protection
+    # -- AccessModes for the data PVC.
+    # See [https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes)
+    accessModes:
+      - ReadWriteOnce
+    # -- Selector Labels for the data PVC.
+    # See [https://kubernetes.io/docs/concepts/storage/persistent-volumes/#selector](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#selector)
+    selectorLabels: {}
+    # -- DataSource option for cloning an existing volume or creating from a snapshot for data PVC.
+    # Take a look at values.yaml for more details.
+    dataSource: {}
+      # # For cloning from an existing volume
+      # # See [https://kubernetes.io/docs/concepts/storage/volume-pvc-datasource/](https://kubernetes.io/docs/concepts/storage/volume-pvc-datasource/)
+      # kind: PersistentVolumeClaim
+      # name: pvc-1
+
+      # # For creating from a snapshot (here AWS)
+      # # [https://aws.amazon.com/blogs/containers/migrating-amazon-eks-clusters-from-gp2-to-gp3-ebs-volumes/](https://aws.amazon.com/blogs/containers/migrating-amazon-eks-clusters-from-gp2-to-gp3-ebs-volumes/)
+      # name: imported-aws-snapshot
+      # kind: VolumeSnapshot
+      # apiGroup: snapshot.storage.k8s.io
+
+    volumeSnapshots:
+      # -- Whether to create snapshots before helm upgrading or not.
+      # The name of the VolumeSnapshot will be "<helm release name>-upgrade-to-revision-<helm revision>-<UTC timestamp YYYYMMDDHHMM>", e.g. "epi-upgrade-to-revision-19-202206221211"
+      preUpgradeEnabled: false
+      # -- Whether to create final snapshot before delete.
+      # The name of the VolumeSnapshot will be "<helm release name>-final-<UTC timestamp YYYYMMDDHHMM>", e.g. "epi-final-202206221213"
+      finalSnapshotEnabled: false
+      # -- API Version of the "snapshot.storage.k8s.io" resource.
+      # See [https://kubernetes.io/docs/concepts/storage/volume-snapshots/](https://kubernetes.io/docs/concepts/storage/volume-snapshots/)
+      apiVersion: "v1"
+      # -- The Volume Snapshot class name.
+      # See [https://kubernetes.io/docs/concepts/storage/volume-snapshot-classes/](https://kubernetes.io/docs/concepts/storage/volume-snapshot-classes/)
+      className: ""
+      # -- Whether to wait until the VolumeSnapshot is ready to use.
+      # Note: On first snapshot this may take a while.
+      waitForReadyToUse: true
+
+  # Settings for the logging PVC.
+  logs:
+    # -- Enables logging to a persistent volume.
+    # if disabled, logging will be to stdout only.
+    enabled: true
+    # -- The name of an existing PVC to use instead of creating a new one.
+    existingClaim: ""
+    # -- Name of the storage class for logs PVC.
+    # If empty or not set then storage class will not be set - which means that the default storage class will be used.
+    storageClassName: ""
+    # -- Size of the logs PVC volume.
+    size: "1Gi"
+    # -- Annotations for the logs PVC.
+    annotations: {}
+    # -- Finalizers for logs PVC.
+    # See [https://kubernetes.io/docs/concepts/storage/persistent-volumes/#storage-object-in-use-protection](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#storage-object-in-use-protection)
+    finalizers:
+      - kubernetes.io/pvc-protection
+    # -- AccessModes for the logs PVC.
+    # See [https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes)
+    accessModes:
+      - ReadWriteOnce
+    # -- Selector Labels for the logs PVC.
+    # See [https://kubernetes.io/docs/concepts/storage/persistent-volumes/#selector](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#selector)
+    selectorLabels: {}
+    # -- DataSource option for cloning an existing volume or creating from a snapshot for logs PVC.
+    # Take a look at values.yaml for more details.
+    dataSource: {}
+      # # For cloning from an existing volume
+      # # See [https://kubernetes.io/docs/concepts/storage/volume-pvc-datasource/](https://kubernetes.io/docs/concepts/storage/volume-pvc-datasource/)
+      # kind: PersistentVolumeClaim
+      # name: pvc-1
+
+      # # For creating from a snapshot (here AWS)
+      # # [https://aws.amazon.com/blogs/containers/migrating-amazon-eks-clusters-from-gp2-to-gp3-ebs-volumes/](https://aws.amazon.com/blogs/containers/migrating-amazon-eks-clusters-from-gp2-to-gp3-ebs-volumes/)
+      # name: imported-aws-snapshot
+      # kind: VolumeSnapshot
+      # apiGroup: snapshot.storage.k8s.io
+    volumeSnapshots:
+      # -- Whether to create snapshots before helm upgrading or not.
+      # The name of the VolumeSnapshot will be "<helm release name>-upgrade-to-revision-<helm revision>-<UTC timestamp YYYYMMDDHHMM>", e.g. "epi-upgrade-to-revision-19-202206221211"
+      preUpgradeEnabled: false
+      # -- Whether to create final snapshot before delete.
+      # The name of the VolumeSnapshot will be "<helm release name>-final-<UTC timestamp YYYYMMDDHHMM>", e.g. "epi-final-202206221213"
+      finalSnapshotEnabled: false
+      # -- API Version of the "snapshot.storage.k8s.io" resource.
+      # See [https://kubernetes.io/docs/concepts/storage/volume-snapshots/](https://kubernetes.io/docs/concepts/storage/volume-snapshots/)
+      apiVersion: "v1"
+      # -- The Volume Snapshot class name.
+      # See [https://kubernetes.io/docs/concepts/storage/volume-snapshot-classes/](https://kubernetes.io/docs/concepts/storage/volume-snapshot-classes/)
+      className: ""
+      # -- Whether to wait until the VolumeSnapshot is ready to use.
+      # Note: On first snapshot this may take a while.
+      waitForReadyToUse: true
+
+# -- Number of replicas for the quorum-node !! DO NOT CHANGE !!
+replicasCount: 1
+# -- Override the full name
+fullnameOverride: ""
+# -- override the name
+nameOverride: ""
+
+# -- Secret(s) for pulling an container image from a private registry.
+# See [https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/)
+imagePullSecrets: []
+
+service:
+  p2p:
+    # -- Whether to deploy the P2P service or not.
+    enabled: true
+    # -- Either ClusterIP, NodePort or LoadBalancer for P2P Service.
+    # See [https://kubernetes.io/docs/concepts/services-networking/service/](https://kubernetes.io/docs/concepts/services-networking/service/)
+    type: ClusterIP
+    # -- Port where the P2P service will be exposed.
+    port: 30303
+    # -- Annotations for the P2P service.
+    # See AWS, see [https://kubernetes.io/docs/concepts/services-networking/service/#ssl-support-on-aws](https://kubernetes.io/docs/concepts/services-networking/service/#ssl-support-on-aws)
+    # For Azure, see [https://kubernetes-sigs.github.io/cloud-provider-azure/topics/loadbalancer/#loadbalancer-annotations](https://kubernetes-sigs.github.io/cloud-provider-azure/topics/loadbalancer/#loadbalancer-annotations)
+    annotations: {}
+      # Let Kubernetes In-tree LoadBalancer controller NOT process this resource (but AWS LB controller 2.2 in this case)
+      # See https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.2/guide/service/nlb/#configuration
+      # service.beta.kubernetes.io/aws-load-balancer-type: "external"
+      # We want the NLB to be Internet-facing (public)
+      # See https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.2/guide/service/annotations/#lb-scheme
+      # service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+      # A custom name
+      # See https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.2/guide/service/annotations/#load-balancer-name
+      # service.beta.kubernetes.io/aws-load-balancer-name: qn-0
+      # Forward traffic to EC2 Instance (thus, a nodePort on the instance will be used)
+      # See https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.2/guide/service/nlb/#instance-mode_1
+      # and https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.2/guide/service/annotations/#nlb-target-type
+      # service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: instance
+      # IPv4 only
+      # See https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.2/guide/service/annotations/#ip-address-type
+      # service.beta.kubernetes.io/aws-load-balancer-ip-address-type: ipv4
+      # Important: Preserve Client (public) IP address of caller on forwarding traffic to target
+      # See https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.2/guide/service/annotations/#target-group-attributes
+      # service.beta.kubernetes.io/aws-load-balancer-target-group-attributes: preserve_client_ip.enabled=true,deregistration_delay.timeout_seconds=120,deregistration_delay.connection_termination.enabled=true,stickiness.enabled=true,stickiness.type=source_ip
+      # Healthcheck setting - must be within [2, 10] - defaults to 3
+      # We use the mininum of 2 to add/remove targets faster from target group
+      # service.beta.kubernetes.io/aws-load-balancer-healthcheck-healthy-threshold: "2"
+      # service.beta.kubernetes.io/aws-load-balancer-healthcheck-unhealthy-threshold: "2"
+      # Use a static Elastic IP address - Elastic IP Allocation IDs required!
+      # From offical docs: Public Facing lb only. Length/order must match subnets
+      # service.beta.kubernetes.io/aws-load-balancer-eip-allocations: eipalloc-0aaXXXXXXXXXXXXXX
+      # We put the NLB into a certain public subnet only - You can provide the subnet ID or the value of the 'Name' tag
+      # From offical docs: You must specify at least one subnet in any of the AZs, both subnetID or subnetName(Name tag on subnets) can be used.
+      # See: https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.2/guide/service/annotations/#subnets
+      # service.beta.kubernetes.io/aws-load-balancer-subnets: eks-ireland-1-vpc-public-eu-west-1b
+      # Only set to true if NLBs subnet is in a different availability zone than the zone affinity of the deployment.
+      # service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "false"
+      # 1. Load Balancer Proxy Protocol does not work for HTTP based workload!
+      # 2. We do not need the Load Balancer Proxy Protocol in our use case, therefore we do not enable it
+      # service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: "*"
+
+      # Do not use. Use spec.loadBalancerSourceRanges instead!
+      # service.beta.kubernetes.io/load-balancer-source-ranges: "8.8.8.8/32,8.8.4.4/32"
+
+    # -- A list of CIDR ranges to whitelist for ingress traffic to the P2P service if type is LoadBalancer.
+    # If list is empty, Kubernetes allows traffic from 0.0.0.0/0 to the Node Security Group(s)
+    loadBalancerSourceRanges:
+      # - 8.8.8.8/32
+      # - 8.8.4.4/32
+    # -- A static IP address for the LoadBalancer if type is LoadBalancer.
+    # Note: This only applies to certain Cloud providers like Google or [Azure](https://docs.microsoft.com/en-us/azure/aks/static-ip).
+    # [https://kubernetes.io/docs/concepts/services-networking/service/#type-loadbalancer](https://kubernetes.io/docs/concepts/services-networking/service/#type-loadbalancer).
+    loadBalancerIP: ""
+
+  rpc:
+    # -- Whether to deploy the RPC service or not.
+    enabled: true
+    # -- Either ClusterIP, NodePort or LoadBalancer for RPC Service.
+    # See [https://kubernetes.io/docs/concepts/services-networking/service/](https://kubernetes.io/docs/concepts/services-networking/service/)
+    type: ClusterIP
+    # -- Port where the RPC service will be exposed.
+    port: 8545
+    # -- Annotations for the RPC service.
+    # See AWS, see [https://kubernetes.io/docs/concepts/services-networking/service/#ssl-support-on-aws](https://kubernetes.io/docs/concepts/services-networking/service/#ssl-support-on-aws)
+    # For Azure, see [https://kubernetes-sigs.github.io/cloud-provider-azure/topics/loadbalancer/#loadbalancer-annotations](https://kubernetes-sigs.github.io/cloud-provider-azure/topics/loadbalancer/#loadbalancer-annotations)
+    annotations: {}
+    # -- A list of CIDR ranges to whitelist for ingress traffic to the RPC service if type is LoadBalancer.
+    # If list is empty, Kubernetes allows traffic from 0.0.0.0/0 to the Node Security Group(s)
+    loadBalancerSourceRanges:
+      # - 8.8.8.8/32
+      # - 8.8.4.4/32
+    # -- A static IP address for the LoadBalancer if type is LoadBalancer.
+    # Note: This only applies to certain Cloud providers like Google or [Azure](https://docs.microsoft.com/en-us/azure/aks/static-ip).
+    # [https://kubernetes.io/docs/concepts/services-networking/service/#type-loadbalancer](https://kubernetes.io/docs/concepts/services-networking/service/#type-loadbalancer).
+    loadBalancerIP: ""
+
+# -- Affinity for scheduling a pod.
+# See [https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/)
+#
+# Notes for AWS: We want to schedule the pod in a certain availability zone, here eu-west-1a
+# Must be the same zone as the NLB - see service annotation service.beta.kubernetes.io/aws-load-balancer-subnets
+# Please note, that your nodes must be labeled accordingly!
+# See [https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone)
+affinity: {}
+  # nodeAffinity:
+  #   requiredDuringSchedulingIgnoredDuringExecution:
+  #     nodeSelectorTerms:
+  #       - matchExpressions:
+  #           - key: topology.kubernetes.io/zone
+  #             operator: In
+  #             values:
+  #               - eu-west-1a
+
+# -- Pod resources
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+# -- Node Selectors in order to assign pods to certain nodes.
+# See [https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/)
+nodeSelector: {}
+
+# -- Tolerations for scheduling a pod.
+# See [https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/)
+tolerations: []
+
+# -- Annotations added to the pod
+podAnnotations: {}
+
+# -- Labels to add to the pod
+podLabels: {}
+
+# -- Security Context for the pod.
+# See [https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)
+podSecurityContext:
+  runAsUser: 10000
+  runAsGroup: 10000
+  fsGroup: 10000
+  # -- The SecComp configuration.
+  # Not enabled by default as not every environment supports it.
+  # [https://kubernetes.io/docs/tutorials/security/seccomp/](https://kubernetes.io/docs/tutorials/security/seccomp/)
+  # seccompProfile:
+  #   type: RuntimeDefault
+
+# -- Security Context for the application container
+# See [https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)
+securityContext:
+  privileged: false
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 10000
+  runAsGroup: 10000
+  allowPrivilegeEscalation: false
+
+# Settings for Containers with kubectl installed used by Jobs "pre-upgrade-volumesnapshot", "propose-validators" and "final-volumesnapshot"
+kubectl:
+  # -- Time to keep the Job after finished in case of an error. If no error occured the Jobs will immediately by deleted.
+  # If value is not set, then 'ttlSecondsAfterFinished' will not be set.
+  ttlSecondsAfterFinished: 300
+
+  image:
+    # -- The repository of the container image containing kubectl
+    repository: bitnami/kubectl
+    # -- Image Pull Policy
+    pullPolicy: Always
+    # -- The Tag of the image containing kubectl. Minor Version should match to your Kubernetes Cluster Version.
+    tag: "1.21.14"
+    # -- sha256 digest of the image.
+    # Do not add the prefix "@sha256:"
+    # <br/>
+    # Defaults to image digest for "bitnami/kubectl:1.21.14", see [https://hub.docker.com/layers/kubectl/bitnami/kubectl/1.21.14/images/sha256-f9814e1d2f1be7f7f09addd1d877090fe457d5b66ca2dcf9a311cf1e67168590?context=explore](https://hub.docker.com/layers/kubectl/bitnami/kubectl/1.21.14/images/sha256-f9814e1d2f1be7f7f09addd1d877090fe457d5b66ca2dcf9a311cf1e67168590?context=explore)
+    # <!-- # pragma: allowlist secret -->
+    sha: "bba32da4e7d08ce099e40c573a2a5e4bdd8b34377a1453a69bbb6977a04e8825"  # pragma: allowlist secret
+
+  # -- Resource constraints for the pre-builder and cleanup job
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+  # -- Pod Security Context for the pod running kubectl.
+  # See [https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)
+  podSecurityContext:
+    runAsUser: 65534
+    runAsGroup: 65534
+    fsGroup: 65534
+    # -- The SecComp configuration.
+    # Not enabled by default as not every environment supports it.
+    # [https://kubernetes.io/docs/tutorials/security/seccomp/](https://kubernetes.io/docs/tutorials/security/seccomp/)
+    # seccompProfile:
+    #   type: RuntimeDefault
+
+  # -- Security Context for the container running kubectl
+  # See [https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)
+  securityContext:
+    privileged: false
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+    runAsNonRoot: true
+    runAsUser: 65534
+    runAsGroup: 65534
+
+# -- An array of extra resources that will be deployed.
+# This is useful e.g. for custom resources like SnapshotSchedule provided by [https://github.com/backube/snapscheduler](https://github.com/backube/snapscheduler).
+extraResources:
+# - |
+#   apiVersion: snapscheduler.backube/v1
+#   kind: SnapshotSchedule
+#   metadata:
+#     name: daily
+#   spec:
+#     retention:
+#       maxCount: 30
+#     schedule: 30 0 * * *
+#
+# - |
+#   apiVersion: snapscheduler.backube/v1
+#   kind: SnapshotSchedule
+#   metadata:
+#     name: hourly
+#   spec:
+#     retention:
+#       maxCount: 24
+#     schedule: 15 * * * *
+
+secretProviderClass:
+  # -- Whether to use CSI Secrets Store (e.g. Azure Key Vault) instead of "traditional" Kubernetes Secret.
+  enabled: false
+  # -- API Version of the SecretProviderClass
+  apiVersion: "secrets-store.csi.x-k8s.io/v1"
+  # -- Spec for the SecretProviderClass.
+  # Note: 1. The nodeKey must be mounted as objectAlias nodekey with path nodekey. 2. In case of a new network: The accountkey must be mounted as objectAlias key with path key.
+  spec: {}
+    ## Sample for AWS:
+    # provider: aws
+    # parameters:
+    #   objects: |
+    #     - objectName: "TODO: ARN or Name of Secret"
+    #       objectType: "secretsmanager"
+    #       jmesPath:
+    #         - path: nodekey
+    #           objectAlias: nodekey
+    #         # Key only required on new network
+    #         - path: key
+    #           objectAlias: key
+
+serviceAccount:
+  # -- Specifies whether a service account should be created.
+  # Must be true if secretProviderClass.enabled is true
+  create: false
+  # -- Annotations to add to the service account
+  annotations: {}
+    ## Sample for AWS if secretProviderClass.enabled is true
+    # eks.amazonaws.com/role-arn: "TODO: The ARN of the IAM role"
+
+  # -- The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+  # -- Whether automounting API credentials for a service account is enabled or not.
+  # See [https://docs.bridgecrew.io/docs/bc_k8s_35](https://docs.bridgecrew.io/docs/bc_k8s_35)
+  automountServiceAccountToken: false
+
+  # --------------------------
+smart_contracts:
+- git_upload_smart_contract_filename: "anchoring.json"
+  smart_contract_name: "anchoring"
+  smart_contract_location: "https://raw.githubusercontent.com/PharmaLedger-IMI/eth-adapter/master/SmartContracts/contracts/Anchoring.sol"
+
+
+
+
+git_upload:
+  # --  Enable the automatic upload to the use case shared repository of the shareable data
+  enabled: true
+  # -- The email used by the git in order to upload the data
+  email: ""
+  # -- The user used by the git in order to upload the data
+  user: ""
+  # -- The repository url eg. https://GITHUB-TOKEN:x-oauth-basic@github.com/organisation/shared-repository.git <!-- # pragma: allowlist secret -->
+  git_repo_with_access_token: ""
+  # -- The repository base folder name where the shareable data to will be uploaded
+  git_repo_storage_path: "networks"
+  # -- The repository base folder name where the shareable data to will be uploaded
+  git_commit_description: "updated smart contract info"
+
+
+
+
+# -- The quorum node pod name
+pod_name: "quorum-pod"
+# -- The kubernetes namespace
+namespace: "default"
+# -- The deployment network
+network_name: "epi"
